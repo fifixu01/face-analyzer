@@ -10,13 +10,19 @@ const instances = {};
 /** Returns a FaceLandmarker for 'VIDEO' (camera preview) or 'IMAGE' (stills). Created once, then cached. */
 export function getLandmarker(runningMode) {
   filesetPromise ??= FilesetResolver.forVisionTasks(WASM_URL);
-  instances[runningMode] ??= filesetPromise.then((fileset) =>
+  const create = (fileset, delegate) =>
     FaceLandmarker.createFromOptions(fileset, {
-      baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
+      baseOptions: { modelAssetPath: MODEL_URL, delegate },
       runningMode,
       numFaces: 1,
       outputFaceBlendshapes: true, // expression checks (eyes open, neutral face)
       outputFacialTransformationMatrixes: true, // head angle checks
+    });
+  // GPU is much faster, but not every browser/device has WebGL available.
+  instances[runningMode] ??= filesetPromise.then((fileset) =>
+    create(fileset, 'GPU').catch((e) => {
+      console.warn('GPU unavailable, falling back to CPU', e);
+      return create(fileset, 'CPU');
     }),
   );
   return instances[runningMode];

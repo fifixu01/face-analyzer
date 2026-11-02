@@ -37,16 +37,28 @@
             </div>
             <div id="flash" hidden></div>
             <div id="cam-placeholder">
-              <button id="start-cam" class="primary">Start camera</button>
+              <div class="empty-oval"></div>
+              <div class="empty-copy">
+                <p class="empty-title">Set up for a clear scan</p>
+                <ul class="tips">
+                  <li>Face a window or lamp so light is even</li>
+                  <li>Camera at eye height, about an arm’s length away</li>
+                  <li>Neutral expression, hair off your forehead</li>
+                </ul>
+                <button id="start-cam" class="primary">Start camera</button>
+                <p class="muted small">The video stays on this device.</p>
+              </div>
             </div>
           </div>
 
           <aside class="panel">
             <h3>Before capture</h3>
-            <p class="muted small">Each item should be checked for an accurate reading.</p>
-            <ul id="checklist"><li class="muted">Start the camera to begin</li></ul>
-            <label class="toggle"><input type="checkbox" id="auto-capture" checked /> Capture automatically when ready</label>
-            <button id="capture" class="primary" disabled>Capture</button>
+            <p class="muted small">The photo is taken once every item is checked.</p>
+            <ul id="checklist"></ul>
+            <div class="panel-foot">
+              <label class="toggle"><input type="checkbox" id="auto-capture" checked /> Capture automatically</label>
+              <button id="capture" class="primary" hidden>Capture</button>
+            </div>
           </aside>
         </div>
       </section>

@@ -54,6 +54,7 @@ let stream = null;
 let rafId = null;
 let lastResult = null;
 let capturing = false;
+let lastChecklistKey = '';
 
 // Small offscreen canvas for brightness sampling.
 const lightCtx = Object.assign(document.createElement('canvas'), { width: 96, height: 54 })
@@ -65,7 +66,21 @@ const setStatus = (msg) => (els.status.textContent = msg ?? '');
 
 Promise.all([getLandmarker('VIDEO'), getLandmarker('IMAGE')])
   .then(() => setStatus(''))
-  .catch((e) => setStatus(`Couldn’t load the face model: ${e.message}`));
+  .catch((e) => {
+    console.error(e);
+    setStatus('Couldn’t load the face model. Check your connection and reload the page.');
+  });
+
+// Shown before the camera starts, so the panel previews what will be checked.
+const IDLE_CHECKS = [
+  'Good distance', 'Centered in the oval', 'Facing the camera', 'Chin level',
+  'Head upright', 'Even lighting', 'Eyes open', 'Neutral expression',
+];
+function renderIdleChecklist() {
+  lastChecklistKey = '';
+  els.checklist.innerHTML = IDLE_CHECKS.map((l) => `<li class="idle"><span class="dot"></span>${l}</li>`).join('');
+}
+renderIdleChecklist();
 
 /* ---------- Views ---------- */
 
@@ -99,7 +114,11 @@ async function startCamera() {
   els.video.srcObject = stream;
   await els.video.play();
   els.placeholder.hidden = true;
+  els.video.parentElement.classList.add('live');
+  els.capture.hidden = false;
   els.guide.hidden = false;
+  els.guide.classList.remove('good');
+  els.holdBar.style.width = '0%';
   capturing = false;
   runPreviewLoop();
 }
@@ -110,10 +129,13 @@ function stopCamera() {
   stream?.getTracks().forEach((t) => t.stop());
   stream = null;
   els.video.srcObject = null;
+  // Clear the last frame's mesh so it doesn't linger on the idle screen.
+  els.overlay.getContext('2d').clearRect(0, 0, els.overlay.width, els.overlay.height);
+  els.video.parentElement.classList.remove('live');
   els.placeholder.hidden = false;
   els.guide.hidden = true;
-  els.capture.disabled = true;
-  els.checklist.innerHTML = '<li class="muted">Start the camera to begin</li>';
+  els.capture.hidden = true;
+  renderIdleChecklist();
 }
 
 async function runPreviewLoop() {
@@ -195,7 +217,6 @@ async function runPreviewLoop() {
   rafId = requestAnimationFrame(tick);
 }
 
-let lastChecklistKey = '';
 function renderChecklist(checks) {
   const key = checks.map((c) => `${c.id}${c.ok}`).join();
   if (key === lastChecklistKey) return; // avoid rebuilding the DOM every frame
