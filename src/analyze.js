@@ -15,6 +15,9 @@ export const IDX = {
   eyeInnerR: 362, eyeOuterR: 263,
   eyeTopL: 159, eyeBottomL: 145,
   eyeTopR: 386, eyeBottomR: 374,
+  browLowL: 52, browLowR: 282, // underside of each brow, above the pupil
+  nasion: 168, // top of the nose bridge, between the eyes
+  bridgeL: 122, bridgeR: 351, // sides of the upper nose bridge
   noseL: 129, noseR: 358,
   mouthL: 61, mouthR: 291,
   upperLipTop: 0, upperLipBottom: 13,
@@ -109,6 +112,24 @@ export function computeMetrics(landmarks, width, height) {
   const tiltR = Math.atan2(level[IDX.eyeInnerR].y - level[IDX.eyeOuterR].y, Math.abs(level[IDX.eyeInnerR].x - level[IDX.eyeOuterR].x));
   const eyeOpen = (d(IDX.eyeTopL, IDX.eyeBottomL) + d(IDX.eyeTopR, IDX.eyeBottomR)) / 2;
 
+  // Brows: gap from underside of brow to upper lid, relative to eye width.
+  const browGap = (d(IDX.browLowL, IDX.eyeTopL) + d(IDX.browLowR, IDX.eyeTopR)) / 2;
+
+  // Nose. Curve = how far the bridge bows away from a straight nasion-to-tip line (frontal view).
+  const noseLength = d(IDX.nasion, IDX.subnasale);
+  const a = level[IDX.nasion];
+  const b = level[IDX.noseTip];
+  const ab = dist(a, b);
+  const bridgeCurve = Math.max(
+    ...[6, 197, 195, 5].map((i) => {
+      const p = level[i];
+      return Math.abs((b.x - a.x) * (a.y - p.y) - (a.x - p.x) * (b.y - a.y)) / ab;
+    }),
+  );
+  const midX = (level[IDX.eyeInnerL].x + level[IDX.eyeInnerR].x) / 2;
+
+  const lowerThird = level[IDX.chin].y - level[IDX.subnasale].y;
+
   const sym = symmetry(level);
 
   return {
@@ -133,6 +154,14 @@ export function computeMetrics(landmarks, width, height) {
     canthalTilt: (((tiltL + tiltR) / 2) * 180) / Math.PI,
     eyeAspect: eyeOpen / eyeWidth, // higher = rounder eyes
     eyeSize: eyeWidth / cheekWidth, // eye width relative to face width
+    browHeight: browGap / eyeWidth,
+    noseBridge: d(IDX.bridgeL, IDX.bridgeR) / noseWidth, // upper bridge width vs nostril width
+    noseLength: noseLength / faceLength,
+    noseCurve: bridgeCurve / noseLength,
+    noseTipOffset: Math.abs(level[IDX.noseTip].x - midX) / cheekWidth,
+    lipFullness: d(IDX.upperLipTop, IDX.lowerLipBottom) / mouthWidth,
+    philtrum: d(IDX.subnasale, IDX.upperLipTop) / lowerThird,
+    chinLength: d(IDX.lowerLipBottom, IDX.chin) / lowerThird,
     yaw: yawRatio(level),
     roll: rollDeg,
   };

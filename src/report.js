@@ -1,6 +1,6 @@
 import { faceShape } from './analyze.js';
 import { LEGEND } from './draw.js';
-import { PROPORTION_EXPLAINERS, readSymmetry, readThirds } from './explain.js';
+import { FEATURE_GROUPS, readSymmetry, readThirds } from './explain.js';
 import { animalType } from './fun.js';
 
 const SHAPE_NOTES = {
@@ -136,24 +136,34 @@ export function renderReport({ summaryEl, detailsEl }, m, { issues, expressions 
     </section>
 
     <section class="block">
-      <h3>Proportions</h3>
-      <p class="muted small">Select a row for what it means.</p>
-      ${PROPORTION_EXPLAINERS.map(({ label, key, guide, measures, read }) => {
-        const [verdict, text] = read(m[key]);
+      <h3>Features</h3>
+      <p class="muted small">Open a group for its measurements, then select any row for what it means.</p>
+      ${FEATURE_GROUPS.map((group, gi) => {
+        const rows = group.items.map((it) => ({ ...it, value: m[it.key], reading: it.read(m[it.key]) }));
         return `
-        <details class="expand prop">
-          <summary class="prop-row">
-            <div>
-              <p class="prop-label">${label}</p>
-              <p class="muted small">${verdict}</p>
-            </div>
-            <div class="prop-value">
-              <span class="num">${fix(m[key])}</span>
-              ${guide ? `<span class="muted small">guide ${guide.toFixed(1)}</span>` : ''}
-            </div>
+        <details class="group"${gi === 0 ? ' open' : ''}>
+          <summary class="group-head">
+            <span class="group-title">${group.title}</span>
+            <span class="group-tags muted small">${rows.map((r) => r.reading[0]).join(' · ')}</span>
             <i class="chev"></i>
           </summary>
-          <div class="expand-body"><p>${text}</p><p class="muted small">${measures}</p></div>
+          <div class="group-body">
+            ${rows.map(({ label, guide, format, measures, value, reading: [verdict, text] }) => `
+            <details class="expand prop">
+              <summary class="prop-row">
+                <div>
+                  <p class="prop-label">${label}</p>
+                  <p class="muted small">${verdict}</p>
+                </div>
+                <div class="prop-value">
+                  <span class="num">${format(value)}</span>
+                  ${guide ? `<span class="muted small">guide ${guide.toFixed(1)}</span>` : ''}
+                </div>
+                <i class="chev"></i>
+              </summary>
+              <div class="expand-body"><p>${text}</p><p class="muted small">${measures}</p></div>
+            </details>`).join('')}
+          </div>
         </details>`;
       }).join('')}
     </section>

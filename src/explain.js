@@ -1,91 +1,213 @@
 // Plain-language readings of each measurement: a short verdict plus a few sentences.
-// Bands are loose, descriptive ranges around classical drawing guides, not judgments.
+// Bands are loose, descriptive ranges, not judgments. Ranges for the newer measurements
+// (marked "estimate") are educated guesses and should be tuned against real photos.
 
 const f2 = (x) => x.toFixed(2);
 const pct = (x) => `${Math.round(x * 100)}%`;
+const deg = (x) => `${x >= 0 ? '+' : ''}${x.toFixed(1)}°`;
 
 function band(value, low, high) {
   return value < low ? 'low' : value > high ? 'high' : 'mid';
 }
 
-export const PROPORTION_EXPLAINERS = [
+/** Builds an item whose reading depends on which of three bands the value falls in. */
+const item = (label, key, { guide = null, format = f2, measures, low, high, text }) => ({
+  label,
+  key,
+  guide,
+  format,
+  measures,
+  read: (v) => text(v)[band(v, low, high)],
+});
+
+export const FEATURE_GROUPS = [
   {
-    label: 'Eye spacing',
-    key: 'eyeSpacing',
-    guide: 1.0,
-    measures: 'Gap between the eyes divided by the width of one eye.',
-    read(v) {
-      return {
-        low: ['Close-set', `The gap between your eyes is about ${f2(v)} eye-widths, a bit less than the classical one eye-width. Close-set eyes draw focus toward the center of the face and the bridge of the nose.`],
-        mid: ['Evenly spaced', `The gap between your eyes is about ${f2(v)} eye-widths, very close to the classical one eye-width. This is the spacing used in the “rule of fifths,” where the face is about five eyes wide.`],
-        high: ['Wide-set', `The gap between your eyes is about ${f2(v)} eye-widths, a bit more than the classical one eye-width. Wide-set eyes give the middle of the face a more open look.`],
-      }[band(v, 0.9, 1.1)];
-    },
+    title: 'Eyes',
+    items: [
+      item('Roundness', 'eyeAspect', {
+        measures: 'Eye opening height divided by eye width. Estimate.',
+        low: 0.27, high: 0.34,
+        text: (v) => ({
+          low: ['Almond', `Your eyes are about ${pct(v)} as tall as they are wide, a longer, almond shape. Almond eyes look sleek and are the most common shape.`],
+          mid: ['Balanced', `Your eyes are about ${pct(v)} as tall as they are wide, between almond and round.`],
+          high: ['Round', `Your eyes are about ${pct(v)} as tall as they are wide, a rounder, more open shape. Round eyes show more of the iris and white and read as bright and expressive.`],
+        }),
+      }),
+      item('Size', 'eyeSize', {
+        format: pct,
+        measures: 'Eye width as a share of face width (cheekbone to cheekbone). Estimate.',
+        low: 0.19, high: 0.23,
+        text: (v) => ({
+          low: ['Smaller', `Each eye spans about ${pct(v)} of your face width, on the smaller side. Smaller eyes put more visual weight on the brows and cheekbones.`],
+          mid: ['Average', `Each eye spans about ${pct(v)} of your face width, a typical size.`],
+          high: ['Large', `Each eye spans about ${pct(v)} of your face width, on the larger side. Large eyes tend to become the focal point of the face.`],
+        }),
+      }),
+      item('Corner tilt', 'canthalTilt', {
+        format: deg,
+        measures: 'Angle from the inner to the outer eye corner. Positive means the outer corner sits higher. Estimate.',
+        low: 0, high: 6,
+        text: (v) => ({
+          low: ['Downturned', `Your outer eye corners sit slightly lower than the inner corners (${deg(v)}). Downturned eyes read as soft and gentle.`],
+          mid: ['Slight lift', `Your outer eye corners sit a little higher than the inner corners (${deg(v)}), which is the most common tilt.`],
+          high: ['Lifted', `Your outer eye corners sit noticeably higher than the inner corners (${deg(v)}). This upturned, “cat eye” tilt reads as sharp and alert.`],
+        }),
+      }),
+      item('Spacing', 'eyeSpacing', {
+        guide: 1.0,
+        measures: 'Gap between the eyes divided by the width of one eye.',
+        low: 0.9, high: 1.1,
+        text: (v) => ({
+          low: ['Close-set', `The gap between your eyes is about ${f2(v)} eye-widths, a bit less than the classical one eye-width. Close-set eyes draw focus toward the center of the face.`],
+          mid: ['Evenly spaced', `The gap between your eyes is about ${f2(v)} eye-widths, very close to the classical one eye-width (the “rule of fifths”).`],
+          high: ['Wide-set', `The gap between your eyes is about ${f2(v)} eye-widths, a bit more than the classical one eye-width. Wide-set eyes give the middle of the face a more open look.`],
+        }),
+      }),
+      item('Brow height', 'browHeight', {
+        measures: 'Gap from the underside of the brow to the upper eyelid, divided by eye width. Estimate.',
+        low: 0.4, high: 0.7,
+        text: (v) => ({
+          low: ['Low-set brows', `Your brows sit close to your eyes (${f2(v)} eye-widths above the lid). Low brows give a more intense, focused look and can make the lids look hooded.`],
+          mid: ['Balanced', `Your brows sit a typical distance above your eyes (${f2(v)} eye-widths).`],
+          high: ['High brows', `Your brows sit high above your eyes (${f2(v)} eye-widths), showing more lid. High brows read as open and expressive. Raising your brows during capture also increases this.`],
+        }),
+      }),
+    ],
   },
   {
-    label: 'Nose width',
-    key: 'noseToEyeGap',
-    guide: 1.0,
-    measures: 'Nose width divided by the gap between the eyes.',
-    read(v) {
-      return {
-        low: ['Narrow', `Your nose is about ${pct(v)} as wide as the gap between your eyes, narrower than the classical guide, where the two match.`],
-        mid: ['Balanced', `Your nose is about as wide as the gap between your eyes (${f2(v)}), which matches the classical guide closely.`],
-        high: ['Broad', `Your nose is about ${pct(v)} as wide as the gap between your eyes, broader than the classical guide, where the two match. Nostril flare from smiling or breathing can push this up.`],
-      }[band(v, 0.9, 1.12)];
-    },
+    title: 'Nose',
+    items: [
+      item('Width', 'noseToEyeGap', {
+        guide: 1.0,
+        measures: 'Nose width at the nostrils divided by the gap between the eyes.',
+        low: 0.9, high: 1.12,
+        text: (v) => ({
+          low: ['Narrow', `Your nose is about ${pct(v)} as wide as the gap between your eyes, narrower than the classical guide, where the two match.`],
+          mid: ['Balanced', `Your nose is about as wide as the gap between your eyes (${f2(v)}), matching the classical guide closely.`],
+          high: ['Broad', `Your nose is about ${pct(v)} as wide as the gap between your eyes, broader than the classical guide. Nostril flare from smiling or breathing can push this up.`],
+        }),
+      }),
+      item('Bridge width', 'noseBridge', {
+        format: pct,
+        measures: 'Width of the upper nose bridge as a share of nostril width. Estimate.',
+        low: 0.5, high: 0.7,
+        text: (v) => ({
+          low: ['Slim bridge', `The top of your nose bridge is about ${pct(v)} as wide as your nostrils, so the nose narrows noticeably between the eyes. A slim bridge gives the nose a refined, defined line.`],
+          mid: ['Medium bridge', `The top of your nose bridge is about ${pct(v)} as wide as your nostrils, a typical taper from top to bottom.`],
+          high: ['Wide bridge', `The top of your nose bridge is about ${pct(v)} as wide as your nostrils, so the nose stays fairly even in width from top to bottom.`],
+        }),
+      }),
+      item('Length', 'noseLength', {
+        format: pct,
+        measures: 'Top of the bridge to the base of the nose, as a share of face length. Estimate.',
+        low: 0.27, high: 0.33,
+        text: (v) => ({
+          low: ['Short', `Your nose takes up about ${pct(v)} of your face length, on the shorter side. A short nose gives the middle of the face a compact look.`],
+          mid: ['Average', `Your nose takes up about ${pct(v)} of your face length, a typical proportion.`],
+          high: ['Long', `Your nose takes up about ${pct(v)} of your face length, on the longer side, giving the middle of the face more length.`],
+        }),
+      }),
+      item('Bridge line', 'noseCurve', {
+        format: pct,
+        measures: 'How far the bridge bows away from a straight line, as a share of nose length (front view).',
+        low: 0.025, high: 0.05,
+        text: (v) => ({
+          low: ['Straight', `From the front, your nose bridge runs in a straight line from between the eyes to the tip.`],
+          mid: ['Slight curve', `From the front, your nose bridge has a slight curve (${pct(v)} of its length). This is common and usually not noticeable.`],
+          high: ['Curved', `From the front, your nose bridge bows noticeably to one side (${pct(v)} of its length). A slight head turn can exaggerate this.`],
+        }),
+      }),
+      item('Tip position', 'noseTipOffset', {
+        format: pct,
+        measures: 'How far the nose tip sits from the center line between the eyes, as a share of face width.',
+        low: 0.015, high: 0.03,
+        text: (v) => ({
+          low: ['Centered', `Your nose tip sits right on the center line of your face.`],
+          mid: ['Nearly centered', `Your nose tip sits slightly off the center line (${pct(v)} of face width). Most noses lean a little.`],
+          high: ['Off-center', `Your nose tip sits off to one side of the center line (${pct(v)} of face width). Check that your head was facing straight on, since turning shifts this a lot.`],
+        }),
+      }),
+    ],
   },
   {
-    label: 'Mouth width',
-    key: 'mouthToNose',
-    guide: 1.5,
-    measures: 'Mouth width divided by nose width.',
-    read(v) {
-      return {
-        low: ['Compact', `Your mouth is about ${f2(v)}× the width of your nose, narrower than the classical 1.5×. A compact mouth keeps the lower face looking narrow.`],
-        mid: ['Balanced', `Your mouth is about ${f2(v)}× the width of your nose, close to the classical 1.5×. In drawing terms, the mouth corners line up roughly under the inner edges of the irises.`],
-        high: ['Wide', `Your mouth is about ${f2(v)}× the width of your nose, wider than the classical 1.5×. Even a slight smile widens the mouth, so a neutral expression gives the truest reading.`],
-      }[band(v, 1.35, 1.65)];
-    },
+    title: 'Mouth & lips',
+    items: [
+      item('Mouth width', 'mouthToNose', {
+        guide: 1.5,
+        measures: 'Mouth width divided by nose width.',
+        low: 1.35, high: 1.65,
+        text: (v) => ({
+          low: ['Compact', `Your mouth is about ${f2(v)}× the width of your nose, narrower than the classical 1.5×.`],
+          mid: ['Balanced', `Your mouth is about ${f2(v)}× the width of your nose, close to the classical 1.5×.`],
+          high: ['Wide', `Your mouth is about ${f2(v)}× the width of your nose, wider than the classical 1.5×. Even a slight smile widens the mouth.`],
+        }),
+      }),
+      item('Lip fullness', 'lipFullness', {
+        format: pct,
+        measures: 'Total lip height divided by mouth width. Estimate.',
+        low: 0.28, high: 0.42,
+        text: (v) => ({
+          low: ['Thin', `Your lips are about ${pct(v)} as tall as your mouth is wide, on the thinner side.`],
+          mid: ['Medium', `Your lips are about ${pct(v)} as tall as your mouth is wide, a typical fullness.`],
+          high: ['Full', `Your lips are about ${pct(v)} as tall as your mouth is wide, on the fuller side.`],
+        }),
+      }),
+      item('Lip ratio', 'lipRatio', {
+        guide: 1.6,
+        measures: 'Lower lip height divided by upper lip height.',
+        low: 1.3, high: 1.9,
+        text: (v) => ({
+          low: ['Even lips', `Your lower lip is about ${f2(v)}× the height of your upper lip, closer in fullness than the classical 1.6×. That usually means a relatively full upper lip.`],
+          mid: ['Classic ratio', `Your lower lip is about ${f2(v)}× the height of your upper lip, close to the classical 1.6×.`],
+          high: ['Fuller lower lip', `Your lower lip is about ${f2(v)}× the height of your upper lip, more than the classical 1.6×, so most of the fullness is in the lower lip.`],
+        }),
+      }),
+      item('Philtrum', 'philtrum', {
+        format: pct,
+        measures: 'The groove from the base of the nose to the top of the upper lip, as a share of the lower third. Estimate.',
+        low: 0.18, high: 0.28,
+        text: (v) => ({
+          low: ['Short', `The space between your nose and upper lip is short (${pct(v)} of the lower face). A short philtrum tends to show more of the upper lip and reads as youthful.`],
+          mid: ['Average', `The space between your nose and upper lip is a typical length (${pct(v)} of the lower face).`],
+          high: ['Long', `The space between your nose and upper lip is on the longer side (${pct(v)} of the lower face).`],
+        }),
+      }),
+    ],
   },
   {
-    label: 'Lip ratio',
-    key: 'lipRatio',
-    guide: 1.6,
-    measures: 'Lower lip height divided by upper lip height.',
-    read(v) {
-      return {
-        low: ['Even lips', `Your lower lip is about ${f2(v)}× the height of your upper lip, so your lips are closer in fullness than the classical 1.6×. That usually means a relatively full upper lip.`],
-        mid: ['Classic ratio', `Your lower lip is about ${f2(v)}× the height of your upper lip, close to the classical 1.6×, where the lower lip is noticeably fuller.`],
-        high: ['Fuller lower lip', `Your lower lip is about ${f2(v)}× the height of your upper lip, more than the classical 1.6×, so most of the lip fullness is in the lower lip.`],
-      }[band(v, 1.3, 1.9)];
-    },
-  },
-  {
-    label: 'Jaw to cheekbones',
-    key: 'jawToCheek',
-    guide: null,
-    measures: 'Jaw width relative to cheekbone width.',
-    read(v) {
-      return {
-        low: ['Tapered jaw', `Your jaw is about ${pct(v)} as wide as your cheekbones, so the face narrows noticeably toward the chin. This is typical of heart and diamond shapes.`],
-        mid: ['Moderate jaw', `Your jaw is about ${pct(v)} as wide as your cheekbones, a gentle taper from cheeks to chin. This is typical of oval faces.`],
-        high: ['Strong jaw', `Your jaw is about ${pct(v)} as wide as your cheekbones, so the lower face stays broad down to the jaw angle. This is typical of square and oblong shapes.`],
-      }[band(v, 0.78, 0.88)];
-    },
-  },
-  {
-    label: 'Forehead to cheekbones',
-    key: 'foreheadToCheek',
-    guide: null,
-    measures: 'Forehead width relative to cheekbone width.',
-    read(v) {
-      return {
-        low: ['Narrow forehead', `Your forehead is about ${pct(v)} as wide as your cheekbones, so the cheekbones are clearly the widest point of the face. This is typical of diamond shapes.`],
-        mid: ['Balanced forehead', `Your forehead is about ${pct(v)} as wide as your cheekbones, a common, balanced relationship between the upper and middle face.`],
-        high: ['Broad forehead', `Your forehead is about ${pct(v)} as wide as your cheekbones, nearly matching them. This is typical of heart and square shapes.`],
-      }[band(v, 0.75, 0.9)];
-    },
+    title: 'Face outline',
+    items: [
+      item('Forehead width', 'foreheadToCheek', {
+        format: pct,
+        measures: 'Forehead width as a share of cheekbone width.',
+        low: 0.75, high: 0.9,
+        text: (v) => ({
+          low: ['Narrow', `Your forehead is about ${pct(v)} as wide as your cheekbones, so the cheekbones are clearly the widest point. Typical of diamond shapes.`],
+          mid: ['Balanced', `Your forehead is about ${pct(v)} as wide as your cheekbones, a common, balanced relationship.`],
+          high: ['Broad', `Your forehead is about ${pct(v)} as wide as your cheekbones, nearly matching them. Typical of heart and square shapes.`],
+        }),
+      }),
+      item('Jaw width', 'jawToCheek', {
+        format: pct,
+        measures: 'Jaw width as a share of cheekbone width.',
+        low: 0.78, high: 0.88,
+        text: (v) => ({
+          low: ['Tapered', `Your jaw is about ${pct(v)} as wide as your cheekbones, so the face narrows noticeably toward the chin. Typical of heart and diamond shapes.`],
+          mid: ['Moderate', `Your jaw is about ${pct(v)} as wide as your cheekbones, a gentle taper. Typical of oval faces.`],
+          high: ['Strong', `Your jaw is about ${pct(v)} as wide as your cheekbones, so the lower face stays broad. Typical of square and oblong shapes.`],
+        }),
+      }),
+      item('Chin length', 'chinLength', {
+        format: pct,
+        measures: 'Bottom of the lower lip to the bottom of the chin, as a share of the lower third. Estimate.',
+        low: 0.36, high: 0.46,
+        text: (v) => ({
+          low: ['Short', `Your chin takes up about ${pct(v)} of the lower face, on the shorter side, which keeps the lower face compact.`],
+          mid: ['Average', `Your chin takes up about ${pct(v)} of the lower face, a typical proportion.`],
+          high: ['Long', `Your chin takes up about ${pct(v)} of the lower face, on the longer side, which gives the jawline more presence.`],
+        }),
+      }),
+    ],
   },
 ];
 

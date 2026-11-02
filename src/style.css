@@ -258,3 +258,15 @@ button:disabled { opacity: 0.4; cursor: default; }
 .fun-label { font-size: 13px; color: var(--muted); }
 .traits { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
 .traits li { font-size: 13px; padding: 3px 10px; border-radius: 99px; background: var(--raised); color: var(--text); }
+
+/* Feature groups */
+.group { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.group + .group { margin-top: 8px; }
+.group > summary { list-style: none; cursor: pointer; }
+.group > summary::-webkit-details-marker { display: none; }
+.group-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.group-title { font-weight: 500; flex: none; }
+.group-tags { flex: 1; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.group[open] > .group-head .chev { transform: rotate(-135deg) translateY(-1px); }
+.group-body { padding: 0 14px 4px; border-top: 1px solid var(--line); }
+.group .expand-body { background: var(--raised); }
