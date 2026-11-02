@@ -1,11 +1,13 @@
-import { TESSELATION } from './landmarker.js';
+import { CONTOURS } from './landmarker.js';
 import { IDX } from './analyze.js';
 
-export function drawMesh(ctx, landmarks, w, h, color = 'rgba(120, 220, 255, 0.4)') {
+export function drawMesh(ctx, landmarks, w, h, color = 'rgba(120, 220, 255, 0.75)') {
   ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(0.6, w / 1200);
+  ctx.lineWidth = Math.max(1.5, w / 600);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
   ctx.beginPath();
-  for (const { start, end } of TESSELATION) {
+  for (const { start, end } of CONTOURS) {
     const a = landmarks[start];
     const b = landmarks[end];
     ctx.moveTo(a.x * w, a.y * h);

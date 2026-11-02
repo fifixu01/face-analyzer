@@ -21,4 +21,5 @@ export function getLandmarker(runningMode) {
   return instances[runningMode];
 }
 
-export const TESSELATION = FaceLandmarker.FACE_LANDMARKS_TESSELATION;
+// Visual only: outlines of face, eyes, brows and lips. Analysis still uses all 478 landmarks.
+export const CONTOURS = FaceLandmarker.FACE_LANDMARKS_CONTOURS;

@@ -12,6 +12,7 @@ const els = {
   video: $('video'),
   overlay: $('live-overlay'),
   placeholder: $('cam-placeholder'),
+  guide: $('face-guide'),
   hint: $('live-hint'),
   countdown: $('countdown'),
   startCam: $('start-cam'),
@@ -84,7 +85,45 @@ async function startCamera() {
   await els.video.play();
   els.placeholder.hidden = true;
   live.reset();
+  showGuide();
   runLiveLoop();
+}
+
+/* ---------- Face guide (shown until the face first lines up) ---------- */
+
+const GUIDE_HOLD_FRAMES = 12; // ~0.4s aligned before dismissing
+let guideActive = false;
+let alignedFrames = 0;
+
+function showGuide() {
+  guideActive = true;
+  alignedFrames = 0;
+  els.guide.hidden = false;
+  els.guide.classList.remove('fade', 'close');
+}
+
+function hideGuide() {
+  guideActive = false;
+  els.guide.classList.add('fade');
+  setTimeout(() => (els.guide.hidden = true), 600);
+}
+
+/** True if the face is roughly centered and roughly filling the oval (normalized coords). */
+function faceInGuide(lm) {
+  const top = lm[10];
+  const chin = lm[152];
+  const cx = (lm[234].x + lm[454].x) / 2;
+  const cy = (top.y + chin.y) / 2;
+  const height = chin.y - top.y;
+  return Math.abs(cx - 0.5) < 0.08 && Math.abs(cy - 0.5) < 0.1 && height > 0.38 && height < 0.75;
+}
+
+function updateGuide(lm) {
+  if (!guideActive) return;
+  const inside = lm && faceInGuide(lm);
+  els.guide.classList.toggle('close', !!inside);
+  alignedFrames = inside ? alignedFrames + 1 : 0;
+  if (alignedFrames >= GUIDE_HOLD_FRAMES) hideGuide();
 }
 
 function stopCamera() {
@@ -94,6 +133,8 @@ function stopCamera() {
   stream = null;
   els.video.srcObject = null;
   els.placeholder.hidden = false;
+  guideActive = false;
+  els.guide.hidden = true;
   els.capture.disabled = true;
   els.hint.textContent = 'Start the camera to begin';
 }
@@ -117,6 +158,7 @@ async function runLiveLoop() {
       const res = landmarker.detectForVideo(v, now);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const lm = res.faceLandmarks[0];
+      updateGuide(lm);
       if (lm) {
         drawMesh(ctx, lm, canvas.width, canvas.height);
         drawMidline(ctx, lm, canvas.width, canvas.height);
@@ -141,6 +183,11 @@ async function runLiveLoop() {
 }
 
 function updateLivePanel(m) {
+  if (guideActive) {
+    els.hint.textContent = 'Line your face up with the oval';
+    els.hint.className = 'hint';
+    return;
+  }
   const warning = poseWarning(m);
   els.hint.textContent = warning ?? 'Tracking. Hold still for the best numbers';
   els.hint.className = warning ? 'hint warn' : 'hint ok';
