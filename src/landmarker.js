@@ -22,5 +22,10 @@ export function getLandmarker(runningMode) {
   return instances[runningMode];
 }
 
-// Visual only: outlines of face, eyes, brows and lips. Analysis still uses all 478 landmarks.
-export const CONTOURS = FaceLandmarker.FACE_LANDMARKS_CONTOURS;
+// Visual only: per-feature outlines. Analysis still uses all 478 landmarks.
+export const FEATURES = {
+  oval: FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
+  brows: [...FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW, ...FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW],
+  eyes: [...FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, ...FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE],
+  lips: FaceLandmarker.FACE_LANDMARKS_LIPS,
+};

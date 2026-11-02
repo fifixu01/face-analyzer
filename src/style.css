@@ -1,39 +1,23 @@
-/* Soft, low-contrast palette. Warm neutrals with muted sage and dusty blue accents. */
+/* Dark, low-contrast palette: warm charcoal with muted accents. */
 :root {
-  --bg: #f3f1ed;
-  --surface: #faf9f6;
-  --line: #e3dfd8;
-  --text: #3a3834;
-  --muted: #8d877e;
-  --accent: #6f8a7a;       /* sage */
-  --accent-soft: #dfe7e1;
-  --warn: #a8875a;         /* ochre */
-  --warn-soft: #f1e9dc;
-  --meter: #e8e4dd;
-  --t1: #a9bcc9;           /* dusty blue */
-  --t2: #c4b4c9;           /* lavender grey */
-  --t3: #d3b9a8;           /* clay */
+  --bg: #191817;
+  --surface: #211f1e;
+  --raised: #2a2826;
+  --line: #2f2d2b;
+  --text: #d3cec6;
+  --muted: #847e76;
+  --accent: #8fa898;       /* sage */
+  --accent-soft: #263029;
+  --on-accent: #191817;
+  --warn: #c9a774;         /* ochre */
+  --warn-soft: #2e2921;
+  --meter: #302e2b;
+  /* facial thirds: distinct but muted hues */
+  --t1: #7fa3d6;           /* blue */
+  --t2: #b296d6;           /* violet */
+  --t3: #d98a7c;           /* coral */
   --radius: 14px;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1f1e1c;
-    --surface: #262523;
-    --line: #34322f;
-    --text: #d6d1c9;
-    --muted: #8a847b;
-    --accent: #8ea596;
-    --accent-soft: #2e3530;
-    --warn: #c2a57a;
-    --warn-soft: #34302a;
-    --meter: #34322f;
-    --t1: #7f93a1;
-    --t2: #998aa0;
-    --t3: #a8907f;
-    color-scheme: dark;
-  }
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -72,18 +56,19 @@ button {
   transition: background 0.15s, border-color 0.15s, opacity 0.15s;
 }
 button:hover:not(:disabled) { border-color: var(--muted); }
-button.primary { background: var(--accent); border-color: var(--accent); color: #fbfaf7; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 500; }
 button.primary:hover:not(:disabled) { filter: brightness(1.05); border-color: var(--accent); }
 button:disabled { opacity: 0.4; cursor: default; }
 
 .tabs {
   display: inline-flex;
   padding: 3px;
-  background: var(--meter);
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 10px;
 }
 .tab { border: 0; background: transparent; color: var(--muted); padding: 7px 14px; }
-.tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06); }
+.tab.active { background: var(--raised); color: var(--text); }
 
 .toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); cursor: pointer; }
 .toggle input { accent-color: var(--accent); }
@@ -102,7 +87,8 @@ button:disabled { opacity: 0.4; cursor: default; }
   position: relative;
   border-radius: var(--radius);
   overflow: hidden;
-  background: #2b2a28;
+  background: #121110;
+  border: 1px solid var(--line);
 }
 .frame video, .frame canvas { display: block; width: 100%; height: auto; }
 .frame #live-overlay { position: absolute; inset: 0; height: 100%; }

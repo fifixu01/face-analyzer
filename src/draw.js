@@ -1,4 +1,12 @@
-import { CONTOURS } from './landmarker.js';
+import { FEATURES } from './landmarker.js';
+
+// Distinct hues per feature, kept slightly muted.
+const FEATURE_COLORS = {
+  oval: 'rgba(211, 206, 198, 0.55)',
+  brows: 'rgba(224, 182, 110, 0.9)',  // amber
+  eyes: 'rgba(108, 196, 182, 0.95)',  // teal
+  lips: 'rgba(222, 134, 122, 0.95)',  // coral
+};
 import { IDX } from './analyze.js';
 
 // ~60 landmarks for a low-poly wireframe across the face (visual only).
@@ -81,29 +89,31 @@ export function drawMesh(ctx, landmarks, w, h) {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
-  ctx.strokeStyle = 'rgba(243, 241, 237, 0.22)';
+  ctx.strokeStyle = 'rgba(211, 206, 198, 0.18)';
   ctx.lineWidth = Math.max(1, w / 900);
   strokeEdges(ctx, landmarks, w, h, sparseEdges);
 
-  ctx.strokeStyle = 'rgba(243, 241, 237, 0.6)';
   ctx.lineWidth = Math.max(1.5, w / 600);
-  strokeEdges(ctx, landmarks, w, h, CONTOURS.map(({ start, end }) => [start, end]));
+  for (const [name, conns] of Object.entries(FEATURES)) {
+    ctx.strokeStyle = FEATURE_COLORS[name];
+    strokeEdges(ctx, landmarks, w, h, conns.map(({ start, end }) => [start, end]));
+  }
 }
 
 const MEASURE_LINES = [
-  { from: IDX.top, to: IDX.chin, color: '#d9c49a' },
-  { from: IDX.foreheadL, to: IDX.foreheadR, color: '#a9c2ae' },
-  { from: IDX.cheekL, to: IDX.cheekR, color: '#d4a5a0' },
-  { from: IDX.jawL, to: IDX.jawR, color: '#a3b8c8' },
-  { from: IDX.eyeInnerL, to: IDX.eyeInnerR, color: '#bba9c6' },
+  { from: IDX.top, to: IDX.chin, color: '#a9c46a' },
+  { from: IDX.foreheadL, to: IDX.foreheadR, color: '#7fa3d6' },
+  { from: IDX.cheekL, to: IDX.cheekR, color: '#b296d6' },
+  { from: IDX.jawL, to: IDX.jawR, color: '#d98fb8' },
+  { from: IDX.eyeInnerL, to: IDX.eyeInnerR, color: '#d3cec6' },
 ];
 
 export const LEGEND = [
-  ['#d9c49a', 'Face length'],
-  ['#a9c2ae', 'Forehead width'],
-  ['#d4a5a0', 'Cheekbone width'],
-  ['#a3b8c8', 'Jaw width'],
-  ['#bba9c6', 'Eye gap'],
+  ['#a9c46a', 'Face length'],
+  ['#7fa3d6', 'Forehead width'],
+  ['#b296d6', 'Cheekbone width'],
+  ['#d98fb8', 'Jaw width'],
+  ['#d3cec6', 'Eye gap'],
 ];
 
 export function drawMeasurements(ctx, landmarks, w, h) {
@@ -126,7 +136,7 @@ export function drawMeasurements(ctx, landmarks, w, h) {
   }
   // Facial-thirds guide lines.
   ctx.setLineDash([lw * 3, lw * 3]);
-  ctx.strokeStyle = 'rgba(243, 241, 237, 0.5)';
+  ctx.strokeStyle = 'rgba(211, 206, 198, 0.45)';
   const x1 = landmarks[IDX.cheekL].x * w - w * 0.03;
   const x2 = landmarks[IDX.cheekR].x * w + w * 0.03;
   for (const i of [IDX.top, IDX.glabella, IDX.subnasale, IDX.chin]) {
