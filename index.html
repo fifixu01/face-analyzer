@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Face Analyzer</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Face Analyzer</h1>
+        <p class="muted">Runs entirely in your browser. Nothing is uploaded anywhere.</p>
+      </header>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-mode="webcam" role="tab">Live webcam</button>
+        <button class="tab" data-mode="upload" role="tab">Upload photo</button>
+      </div>
+
+      <!-- Live webcam -->
+      <section id="webcam-view" class="view">
+        <div class="live-layout">
+          <div class="frame mirrored-frame">
+            <video id="video" playsinline muted></video>
+            <canvas id="live-overlay"></canvas>
+            <div id="countdown" hidden></div>
+            <div id="cam-placeholder">
+              <button id="start-cam" class="primary">Start camera</button>
+            </div>
+          </div>
+
+          <aside id="live-panel" class="panel">
+            <div id="live-hint" class="hint">Start the camera to begin</div>
+            <div class="stat big">
+              <span class="label">Symmetry</span>
+              <span class="value" id="lv-symmetry">--</span>
+              <div class="bar"><div id="lv-symmetry-bar"></div></div>
+            </div>
+            <div class="stat">
+              <span class="label">Face shape</span>
+              <span class="value" id="lv-shape">--</span>
+            </div>
+            <div class="stat">
+              <span class="label">Length : width</span>
+              <span class="value" id="lv-ltw">--</span>
+            </div>
+            <div class="stat">
+              <span class="label">Eye spacing</span>
+              <span class="value" id="lv-eyes">--</span>
+            </div>
+            <div class="stat">
+              <span class="label">Facial thirds</span>
+              <div class="thirds" id="lv-thirds">
+                <div class="t1"></div><div class="t2"></div><div class="t3"></div>
+              </div>
+            </div>
+            <button id="capture" class="primary" disabled>See my full results</button>
+            <label class="toggle"><input type="checkbox" id="use-timer" /> 3-second timer</label>
+          </aside>
+        </div>
+      </section>
+
+      <!-- Upload -->
+      <section id="upload-view" class="view" hidden>
+        <label id="dropzone">
+          <input type="file" id="file" accept="image/*" hidden />
+          <strong>Drop a photo here</strong> or click to choose one
+          <span class="muted">Front-facing, even lighting, hair off your forehead works best</span>
+        </label>
+      </section>
+
+      <!-- Full results -->
+      <section id="result-view" class="view" hidden>
+        <div class="result-layout">
+          <div>
+            <div class="frame"><canvas id="result-canvas"></canvas></div>
+            <div class="controls">
+              <button id="retake">Try again</button>
+              <label class="toggle"><input type="checkbox" id="show-mesh" /> Show mesh</label>
+            </div>
+          </div>
+          <div id="report"></div>
+        </div>
+      </section>
+
+      <p id="status" class="muted">Loading face model…</p>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
