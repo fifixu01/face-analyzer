@@ -4,7 +4,6 @@ A browser app that maps your face with [MediaPipe Face Landmarker](https://ai.go
 
 - **Webcam:** a guide oval and checklist (distance, centering, head angle, lighting, neutral expression) make sure the shot is right, then it auto-captures
 - **Results:** analysis runs on the frozen frame: a detailed report with an annotated photo, symmetry by region, proportions vs. classical guides and a written summary
-- **Upload:** the same detailed report for a photo
 
 ## Run
 
@@ -19,7 +18,7 @@ Open the printed localhost URL. Camera access requires `localhost` or HTTPS.
 
 - `src/analyze.js`: landmark indices, metrics, face-shape heuristic
 - `src/quality.js`: capture checks (head pose, lighting, expression, framing)
-- `src/main.js`: webcam loop, capture, upload, view switching
+- `src/main.js`: home, camera loop, capture, view switching
 - `src/report.js`: detailed results page
 - `src/draw.js`: mesh and measurement overlays
 - `src/landmarker.js`: MediaPipe model loading

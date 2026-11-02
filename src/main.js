@@ -7,10 +7,13 @@ import { renderReport, renderLegend } from './report.js';
 
 const $ = (id) => document.getElementById(id);
 const els = {
-  tabs: document.querySelectorAll('.tab'),
+  homeView: $('home-view'),
   webcamView: $('webcam-view'),
-  uploadView: $('upload-view'),
   resultView: $('result-view'),
+  topbar: $('topbar'),
+  homeLink: $('home-link'),
+  camMsg: $('cam-msg'),
+  retryCam: $('retry-cam'),
   video: $('video'),
   overlay: $('live-overlay'),
   placeholder: $('cam-placeholder'),
@@ -22,8 +25,6 @@ const els = {
   autoCapture: $('auto-capture'),
   startCam: $('start-cam'),
   capture: $('capture'),
-  file: $('file'),
-  dropzone: $('dropzone'),
   resultCanvas: $('result-canvas'),
   retake: $('retake'),
   showMesh: $('show-mesh'),
@@ -50,7 +51,6 @@ function driftFrom(anchor, lm, w, h) {
 }
 const snapshot = (lm) => ANCHOR_POINTS.map((i) => ({ x: lm[i].x, y: lm[i].y }));
 
-let mode = 'webcam';
 let stream = null;
 let rafId = null;
 let lastResult = null;
@@ -86,30 +86,40 @@ renderIdleChecklist();
 /* ---------- Views ---------- */
 
 function show(view) {
-  for (const v of [els.webcamView, els.uploadView, els.resultView]) v.hidden = v !== view;
+  for (const v of [els.homeView, els.webcamView, els.resultView]) v.hidden = v !== view;
+  els.topbar.hidden = view === els.homeView;
+  window.scrollTo({ top: 0 });
 }
 
-for (const tab of els.tabs) {
-  tab.addEventListener('click', () => {
-    mode = tab.dataset.mode;
-    els.tabs.forEach((t) => t.classList.toggle('active', t === tab));
-    stopCamera();
-    show(mode === 'webcam' ? els.webcamView : els.uploadView);
-  });
+function openCamera() {
+  show(els.webcamView);
+  startCamera();
 }
+
+els.startCam.addEventListener('click', openCamera);
+els.retryCam.addEventListener('click', startCamera);
+els.homeLink.addEventListener('click', () => {
+  stopCamera();
+  lastResult = null;
+  show(els.homeView);
+});
 
 /* ---------- Camera ---------- */
 
-els.startCam.addEventListener('click', startCamera);
-
 async function startCamera() {
+  els.camMsg.textContent = 'Starting camera…';
+  els.retryCam.hidden = true;
   try {
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false,
     });
   } catch (e) {
-    setStatus(`Camera unavailable (${e.message}). You can use the Upload tab instead.`);
+    console.error(e);
+    els.camMsg.textContent = e.name === 'NotAllowedError'
+      ? 'Camera access was blocked. Allow it in your browser’s address bar, then try again.'
+      : 'Couldn’t start the camera. Make sure no other app is using it, then try again.';
+    els.retryCam.hidden = false;
     return;
   }
   els.video.srcObject = stream;
@@ -245,45 +255,19 @@ async function capture() {
   els.flash.hidden = false;
   setTimeout(() => (els.flash.hidden = true), 250);
   stopCamera();
-  await analyzeStill(still, { framing: true });
-}
-
-/* ---------- Upload ---------- */
-
-els.file.addEventListener('change', () => els.file.files[0] && loadFile(els.file.files[0]));
-els.dropzone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  els.dropzone.classList.add('drag');
-});
-els.dropzone.addEventListener('dragleave', () => els.dropzone.classList.remove('drag'));
-els.dropzone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  els.dropzone.classList.remove('drag');
-  const f = e.dataTransfer.files[0];
-  if (f?.type.startsWith('image/')) loadFile(f);
-});
-
-async function loadFile(file) {
-  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-  const still = document.createElement('canvas');
-  still.width = Math.round(bitmap.width * scale);
-  still.height = Math.round(bitmap.height * scale);
-  still.getContext('2d').drawImage(bitmap, 0, 0, still.width, still.height);
-  els.file.value = '';
-  await analyzeStill(still, { framing: false });
+  await analyzeStill(still);
 }
 
 /* ---------- Full results ---------- */
 
-async function analyzeStill(still, { framing }) {
+async function analyzeStill(still) {
   setStatus('Analyzing…');
   const landmarker = await getLandmarker('IMAGE');
   const res = landmarker.detect(still);
   const lm = res.faceLandmarks[0];
   if (!lm) {
-    setStatus('No face found. Try a clearer, front-facing photo.');
-    show(mode === 'webcam' ? els.webcamView : els.uploadView);
+    setStatus('No face found in that shot. Let’s try again.');
+    openCamera();
     return;
   }
   setStatus('');
@@ -292,7 +276,7 @@ async function analyzeStill(still, { framing }) {
   lastResult = { still, lm: lmFull };
   drawResult();
 
-  // Re-check quality on the frozen frame itself. Framing (distance/centering) only matters for the webcam guide.
+  // Re-check quality on the frozen frame itself. Framing (distance/centering) was handled by the camera guide.
   const checks = runChecks({
     lm,
     w: still.width,
@@ -308,7 +292,6 @@ async function analyzeStill(still, { framing }) {
     expressions: topExpressions(res.faceBlendshapes),
   });
   show(els.resultView);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function drawResult() {
@@ -326,10 +309,6 @@ els.showMesh.addEventListener('change', () => lastResult && drawResult());
 
 els.retake.addEventListener('click', () => {
   lastResult = null;
-  if (mode === 'webcam') {
-    show(els.webcamView);
-    startCamera();
-  } else {
-    show(els.uploadView);
-  }
+  setStatus('');
+  openCamera();
 });
