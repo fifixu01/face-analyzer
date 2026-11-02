@@ -283,9 +283,4 @@ button.big {
   transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
 }
 button.big:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(143, 168, 152, 0.26); }
-.tip-chips { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.tip-chips li {
-  font-size: 13px; color: var(--muted);
-  padding: 5px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line);
-}
 #home-view:not([hidden]) ~ #status { text-align: center; }
