@@ -47,13 +47,14 @@ export function renderLegend(el) {
   el.innerHTML = LEGEND.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('');
 }
 
-export function renderReport(el, m, { issues, expressions }) {
+/** Summary goes under the photo; detailed sections go in the side column. */
+export function renderReport({ summaryEl, detailsEl }, m, { issues, expressions }) {
   const shape = faceShape(m);
   const symRows = [
     ['Eyes', m.symEyes], ['Brows', m.symBrows], ['Nose', m.symNose], ['Mouth', m.symMouth], ['Jaw', m.symJaw],
   ];
 
-  el.innerHTML = `
+  summaryEl.innerHTML = `
     ${issues.length ? `
     <div class="notice">
       <p class="notice-title">This shot may affect accuracy</p>
@@ -73,7 +74,9 @@ export function renderReport(el, m, { issues, expressions }) {
 
     <p class="lede">${summary(m, shape)}</p>
     ${expressions.length ? `<p class="muted small">Expression detected: ${expressions.join(', ')}</p>` : ''}
+  `;
 
+  detailsEl.innerHTML = `
     <section class="block">
       <h3>Face shape</h3>
       <p>${SHAPE_NOTES[shape.best]}</p>

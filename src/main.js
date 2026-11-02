@@ -26,6 +26,7 @@ const els = {
   resultCanvas: $('result-canvas'),
   retake: $('retake'),
   showMesh: $('show-mesh'),
+  summary: $('summary'),
   report: $('report'),
   status: $('status'),
 };
@@ -250,7 +251,7 @@ async function analyzeStill(still, { framing }) {
     framing: false,
   });
   const m = computeMetrics(lm, still.width, still.height);
-  renderReport(els.report, m, {
+  renderReport({ summaryEl: els.summary, detailsEl: els.report }, m, {
     issues: checks.filter((c) => !c.ok).map((c) => c.fix),
     expressions: topExpressions(res.faceBlendshapes),
   });
