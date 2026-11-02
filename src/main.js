@@ -2,6 +2,7 @@ import { getLandmarker } from './landmarker.js';
 import { computeMetrics, topExpressions } from './analyze.js';
 import { runChecks, measureLighting } from './quality.js';
 import { drawMesh, drawMeasurements } from './draw.js';
+import { findHairline } from './hairline.js';
 import { renderReport, renderLegend } from './report.js';
 
 const $ = (id) => document.getElementById(id);
@@ -286,7 +287,9 @@ async function analyzeStill(still, { framing }) {
     return;
   }
   setStatus('');
-  lastResult = { still, lm };
+  const hairline = findHairline(still, lm);
+  const lmFull = hairline ? [...lm, hairline] : lm;
+  lastResult = { still, lm: lmFull };
   drawResult();
 
   // Re-check quality on the frozen frame itself. Framing (distance/centering) only matters for the webcam guide.
@@ -299,7 +302,7 @@ async function analyzeStill(still, { framing }) {
     lighting: measureLighting(still, lm, lightCtx),
     framing: false,
   });
-  const m = computeMetrics(lm, still.width, still.height);
+  const m = computeMetrics(lmFull, still.width, still.height);
   renderReport({ summaryEl: els.summary, detailsEl: els.report }, m, {
     issues: checks.filter((c) => !c.ok).map((c) => c.fix),
     expressions: topExpressions(res.faceBlendshapes),

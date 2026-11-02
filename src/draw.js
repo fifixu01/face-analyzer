@@ -101,7 +101,7 @@ export function drawMesh(ctx, landmarks, w, h) {
 }
 
 const MEASURE_LINES = [
-  { from: IDX.top, to: IDX.chin, color: '#a9c46a' },
+  { from: 'top', to: IDX.chin, color: '#a9c46a' },
   { from: IDX.foreheadL, to: IDX.foreheadR, color: '#7fa3d6' },
   { from: IDX.cheekL, to: IDX.cheekR, color: '#b296d6' },
   { from: IDX.jawL, to: IDX.jawR, color: '#d98fb8' },
@@ -117,10 +117,11 @@ export const LEGEND = [
 ];
 
 export function drawMeasurements(ctx, landmarks, w, h) {
+  const topI = landmarks.length > IDX.hairline ? IDX.hairline : IDX.top;
   const lw = Math.max(1.5, w / 550);
   ctx.lineWidth = lw;
   for (const { from, to, color } of MEASURE_LINES) {
-    const a = landmarks[from];
+    const a = landmarks[from === 'top' ? topI : from];
     const b = landmarks[to];
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
@@ -139,7 +140,7 @@ export function drawMeasurements(ctx, landmarks, w, h) {
   ctx.strokeStyle = 'rgba(211, 206, 198, 0.45)';
   const x1 = landmarks[IDX.cheekL].x * w - w * 0.03;
   const x2 = landmarks[IDX.cheekR].x * w + w * 0.03;
-  for (const i of [IDX.top, IDX.glabella, IDX.subnasale, IDX.chin]) {
+  for (const i of [topI, IDX.glabella, IDX.subnasale, IDX.chin]) {
     const y = landmarks[i].y * h;
     ctx.beginPath();
     ctx.moveTo(x1, y);

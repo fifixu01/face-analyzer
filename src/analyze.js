@@ -2,7 +2,8 @@
 // Index map: https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model_uv_visualization.png
 
 export const IDX = {
-  top: 10, // top of the mesh; sits below the real hairline
+  top: 10, // top of the mesh; sits partway up the forehead
+  hairline: 478, // appended by findHairline() when a hairline is detected
   glabella: 9, // between the brows
   noseTip: 1,
   subnasale: 2, // base of the nose
@@ -82,12 +83,15 @@ export function computeMetrics(landmarks, width, height) {
   const { level, rollDeg } = levelPoints(landmarks, width, height);
   const d = (a, b) => dist(level[a], level[b]);
 
-  const faceLength = d(IDX.top, IDX.chin);
+  // Use the detected hairline when we have it; otherwise the top of the mesh.
+  const hairlineFound = landmarks.length > IDX.hairline;
+  const topI = hairlineFound ? IDX.hairline : IDX.top;
+  const faceLength = d(topI, IDX.chin);
   const cheekWidth = d(IDX.cheekL, IDX.cheekR);
   const jawWidth = d(IDX.jawL, IDX.jawR);
   const foreheadWidth = d(IDX.foreheadL, IDX.foreheadR);
 
-  const upper = level[IDX.glabella].y - level[IDX.top].y;
+  const upper = level[IDX.glabella].y - level[topI].y;
   const middle = level[IDX.subnasale].y - level[IDX.glabella].y;
   const lower = level[IDX.chin].y - level[IDX.subnasale].y;
   const thirds = upper + middle + lower;
@@ -106,6 +110,7 @@ export function computeMetrics(landmarks, width, height) {
     symNose: sym.regions.Nose,
     symMouth: sym.regions.Mouth,
     symJaw: sym.regions.Jaw,
+    hairlineFound: hairlineFound ? 1 : 0,
     lengthToWidth: faceLength / cheekWidth,
     jawToCheek: jawWidth / cheekWidth,
     foreheadToCheek: foreheadWidth / cheekWidth,
@@ -124,14 +129,16 @@ export function computeMetrics(landmarks, width, height) {
 
 /**
  * Heuristic face-shape classifier. Thresholds are a starting point; tune them on real photos.
- * Landmark 10 sits below the true hairline, so lengthToWidth reads lower than a tape measure would.
  */
 export function faceShape(m) {
+  // Thresholds assume hairline-to-chin length. Without a detected hairline the mesh top sits
+  // lower, so scale up by a rough average correction.
+  const L = m.hairlineFound ? m.lengthToWidth : m.lengthToWidth * 1.1;
   const s = {
-    Oval: 1 - Math.abs(m.lengthToWidth - 1.3) * 3 - Math.abs(m.jawToCheek - 0.8) * 3,
-    Round: 1 - Math.abs(m.lengthToWidth - 1.1) * 3 - Math.abs(m.jawToCheek - 0.82) * 3,
-    Square: 1 - Math.abs(m.lengthToWidth - 1.12) * 3 - Math.abs(m.jawToCheek - 0.92) * 4,
-    Oblong: 1 - Math.abs(m.lengthToWidth - 1.5) * 3 - Math.abs(m.jawToCheek - 0.85) * 2,
+    Oval: 1 - Math.abs(L - 1.43) * 3 - Math.abs(m.jawToCheek - 0.8) * 3,
+    Round: 1 - Math.abs(L - 1.21) * 3 - Math.abs(m.jawToCheek - 0.82) * 3,
+    Square: 1 - Math.abs(L - 1.23) * 3 - Math.abs(m.jawToCheek - 0.92) * 4,
+    Oblong: 1 - Math.abs(L - 1.65) * 3 - Math.abs(m.jawToCheek - 0.85) * 2,
     Heart: 1 - Math.abs(m.foreheadToJaw - 1.2) * 3 - Math.abs(m.jawToCheek - 0.72) * 3,
     Diamond: 1 - Math.abs(m.foreheadToCheek - 0.72) * 4 - Math.abs(m.jawToCheek - 0.72) * 3,
   };

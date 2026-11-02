@@ -109,7 +109,9 @@ export function renderReport({ summaryEl, detailsEl }, m, { issues, expressions 
         <div><dt><i class="t2"></i>Middle</dt><dd>${pct(m.thirdMiddle)}</dd></div>
         <div><dt><i class="t3"></i>Lower</dt><dd>${pct(m.thirdLower)}</dd></div>
       </dl>
-      <p class="muted small">Forehead to brows, brows to nose base, nose base to chin. The classical guide is equal thirds. The upper third reads short because tracking stops below the hairline.</p>
+      <p class="muted small">Hairline to brows, brows to nose base, nose base to chin. The classical guide is equal thirds. ${m.hairlineFound
+        ? 'The hairline was detected from the photo.'
+        : 'No clear hairline was found (hair pulled back, bangs or a hat can cause this), so the upper third is measured from partway up the forehead and reads short.'}</p>
     </section>
 
     <section class="block">

@@ -27,5 +27,5 @@ Open the printed localhost URL. Camera access requires `localhost` or HTTPS.
 ## Known limitations
 
 - The face-shape thresholds in `faceShape()` are a starting point and need tuning on real photos.
-- Landmark 10 (top of the mesh) sits below the real hairline, so face length and the upper third read short.
+- The hairline is found by scanning the photo for the skin-to-hair color change (`src/hairline.js`). With no clear hairline (bald, hat, hair close to skin tone), it falls back to the top of the mesh, which sits partway up the forehead.
 - These are 2D measurements from a single image. Head turn, lens distortion and expression all affect them.
