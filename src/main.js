@@ -31,7 +31,7 @@ const els = {
   status: $('status'),
 };
 
-const HOLD_MS = 1200; // how long everything must stay green before auto-capture
+const HOLD_MS = 3000; // how long everything must stay green before auto-capture
 const LIGHT_EVERY_MS = 250;
 const GRACE_MS = 200; // a brief flicker out of green doesn't reset the hold timer
 
@@ -153,7 +153,7 @@ async function runPreviewLoop() {
       els.guide.classList.toggle('good', allGood);
       els.holdBar.style.width = `${(els.autoCapture.checked ? progress : 0) * 100}%`;
       els.guideText.textContent = allGood
-        ? els.autoCapture.checked ? 'Hold still' : 'Ready to capture'
+        ? els.autoCapture.checked ? `Hold still  ${Math.max(1, Math.ceil((HOLD_MS - (now - greenSince)) / 1000))}` : 'Ready to capture'
         : checks.find((c) => !c.ok).fix;
 
       if (allGood && els.autoCapture.checked && progress >= 1) {
