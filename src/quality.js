@@ -51,7 +51,7 @@ export function measureLighting(source, lm, ctx) {
 }
 
 /**
- * Runs every check. `framing: false` skips distance/centering (for uploaded photos).
+ * Runs every check. `framing: false` skips distance/centering (used when re-checking the captured still).
  * Returns [{ id, label, ok, fix }] in priority order.
  */
 export function runChecks({ lm, w, h, matrix, blendshapes, lighting, framing = true }) {
