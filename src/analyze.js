@@ -13,6 +13,8 @@ export const IDX = {
   foreheadL: 54, foreheadR: 284,
   eyeOuterL: 33, eyeInnerL: 133,
   eyeInnerR: 362, eyeOuterR: 263,
+  eyeTopL: 159, eyeBottomL: 145,
+  eyeTopR: 386, eyeBottomR: 374,
   noseL: 129, noseR: 358,
   mouthL: 61, mouthR: 291,
   upperLipTop: 0, upperLipBottom: 13,
@@ -101,6 +103,12 @@ export function computeMetrics(landmarks, width, height) {
   const noseWidth = d(IDX.noseL, IDX.noseR);
   const mouthWidth = d(IDX.mouthL, IDX.mouthR);
 
+  // Eye shape. Canthal tilt: degrees the outer corner sits above the inner corner (positive = upturned).
+  // In image coords y grows downward, so "above" means a smaller y.
+  const tiltL = Math.atan2(level[IDX.eyeInnerL].y - level[IDX.eyeOuterL].y, Math.abs(level[IDX.eyeInnerL].x - level[IDX.eyeOuterL].x));
+  const tiltR = Math.atan2(level[IDX.eyeInnerR].y - level[IDX.eyeOuterR].y, Math.abs(level[IDX.eyeInnerR].x - level[IDX.eyeOuterR].x));
+  const eyeOpen = (d(IDX.eyeTopL, IDX.eyeBottomL) + d(IDX.eyeTopR, IDX.eyeBottomR)) / 2;
+
   const sym = symmetry(level);
 
   return {
@@ -122,6 +130,9 @@ export function computeMetrics(landmarks, width, height) {
     noseToEyeGap: noseWidth / eyeGap,
     mouthToNose: mouthWidth / noseWidth,
     lipRatio: d(IDX.lowerLipTop, IDX.lowerLipBottom) / d(IDX.upperLipTop, IDX.upperLipBottom),
+    canthalTilt: (((tiltL + tiltR) / 2) * 180) / Math.PI,
+    eyeAspect: eyeOpen / eyeWidth, // higher = rounder eyes
+    eyeSize: eyeWidth / cheekWidth, // eye width relative to face width
     yaw: yawRatio(level),
     roll: rollDeg,
   };

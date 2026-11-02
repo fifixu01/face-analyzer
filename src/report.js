@@ -1,6 +1,7 @@
 import { faceShape } from './analyze.js';
 import { LEGEND } from './draw.js';
 import { PROPORTION_EXPLAINERS, readSymmetry, readThirds } from './explain.js';
+import { animalType } from './fun.js';
 
 const SHAPE_NOTES = {
   Oval: 'Longer than it is wide, with a jaw a little narrower than the cheekbones. A balanced, gently tapering outline.',
@@ -26,6 +27,25 @@ function summary(m, shape) {
     `The most symmetric area is your ${sorted[0][0]}, and the least is your ${sorted.at(-1)[0]}.`,
     spread < 0.06 ? 'Your facial thirds are evenly balanced.' : `Your ${longest} third is the longest of the three.`,
   ].join(' ');
+}
+
+function funSection(m) {
+  const { primary, secondary } = animalType(m);
+  return `
+    <section class="fun">
+      <p class="eyebrow">Just for fun</p>
+      <div class="fun-head">
+        <div>
+          <p class="fun-label">Your animal type</p>
+          <p class="hero-value">${primary.animal}</p>
+        </div>
+        <p class="muted small">with a touch of ${secondary.animal.toLowerCase()}</p>
+      </div>
+      <p>${primary.blurb}</p>
+      ${primary.traits.length ? `
+      <ul class="traits">${primary.traits.map((t) => `<li>${t}</li>`).join('')}</ul>` : ''}
+      <p class="muted small">Based on eye tilt, eye shape and size, jaw taper and face proportions. Not scientific.</p>
+    </section>`;
 }
 
 export function renderLegend(el) {
@@ -59,6 +79,7 @@ export function renderReport({ summaryEl, detailsEl }, m, { issues, expressions 
 
     <p class="lede">${summary(m, shape)}</p>
     ${expressions.length ? `<p class="muted small">Expression detected: ${expressions.join(', ')}</p>` : ''}
+    ${funSection(m)}
   `;
 
   detailsEl.innerHTML = `
