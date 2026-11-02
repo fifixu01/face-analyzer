@@ -32,6 +32,7 @@ const els = {
 
 const HOLD_MS = 1200; // how long everything must stay green before auto-capture
 const LIGHT_EVERY_MS = 250;
+const GRACE_MS = 200; // a brief flicker out of green doesn't reset the hold timer
 
 let mode = 'webcam';
 let stream = null;
@@ -106,6 +107,7 @@ async function runPreviewLoop() {
   let lighting = null;
   let lastLight = 0;
   let greenSince = null;
+  let lastGreen = 0;
 
   const tick = (now) => {
     if (!stream || capturing) return;
@@ -138,7 +140,12 @@ async function runPreviewLoop() {
       els.capture.disabled = !lm;
 
       // Hold-still timer before auto-capture.
-      greenSince = allGood ? (greenSince ?? now) : null;
+      if (allGood) {
+        lastGreen = now;
+        greenSince ??= now;
+      } else if (now - lastGreen > GRACE_MS) {
+        greenSince = null;
+      }
       const progress = greenSince ? Math.min(1, (now - greenSince) / HOLD_MS) : 0;
       els.guide.classList.toggle('good', allGood);
       els.holdBar.style.width = `${(els.autoCapture.checked ? progress : 0) * 100}%`;

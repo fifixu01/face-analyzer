@@ -62,27 +62,27 @@ export function runChecks({ lm, w, h, matrix, blendshapes, lighting, framing = t
 
   if (framing) {
     const height = lm[152].y - lm[10].y;
-    add('distance', 'Good distance', height > 0.38 && height < 0.75,
-      height <= 0.38 ? 'Move closer to the camera' : 'Move back a little');
+    add('distance', 'Good distance', height > 0.33 && height < 0.8,
+      height <= 0.33 ? 'Move closer to the camera' : 'Move back a little');
     const cx = (lm[234].x + lm[454].x) / 2;
     const cy = (lm[10].y + lm[152].y) / 2;
-    add('center', 'Centered in the oval', Math.abs(cx - 0.5) < 0.08 && Math.abs(cy - 0.5) < 0.1,
+    add('center', 'Centered in the oval', Math.abs(cx - 0.5) < 0.1 && Math.abs(cy - 0.5) < 0.12,
       'Center your face in the oval');
   }
 
   const pose = headPose(matrix);
   if (pose) {
-    add('yaw', 'Facing the camera', pose.yaw < 8, 'Turn to face the camera straight on');
-    add('pitch', 'Chin level', pose.pitch < 10, 'Keep your chin level. Put the camera at eye height');
+    add('yaw', 'Facing the camera', pose.yaw < 10, 'Turn to face the camera straight on');
+    add('pitch', 'Chin level', pose.pitch < 13, 'Keep your chin level. Put the camera at eye height');
   }
-  add('roll', 'Head upright', rollDeg(lm, w, h) < 5, 'Straighten your head, it’s tilted to one side');
+  add('roll', 'Head upright', rollDeg(lm, w, h) < 7, 'Straighten your head, it’s tilted to one side');
 
   if (lighting) {
     const { brightness, imbalance } = lighting;
     add('light', 'Even lighting',
-      brightness > 70 && brightness < 210 && imbalance < 0.22,
-      brightness <= 70 ? 'Too dark. Find more light'
-        : brightness >= 210 ? 'Too bright. Move away from direct light'
+      brightness > 60 && brightness < 220 && imbalance < 0.28,
+      brightness <= 60 ? 'Too dark. Find more light'
+        : brightness >= 220 ? 'Too bright. Move away from direct light'
         : 'One side of your face is in shadow. Face the light straight on');
   }
 
@@ -90,8 +90,8 @@ export function runChecks({ lm, w, h, matrix, blendshapes, lighting, framing = t
     const blink = Math.max(blend(blendshapes, 'eyeBlinkLeft'), blend(blendshapes, 'eyeBlinkRight'));
     const smile = Math.max(blend(blendshapes, 'mouthSmileLeft'), blend(blendshapes, 'mouthSmileRight'));
     const open = blend(blendshapes, 'jawOpen');
-    add('eyes', 'Eyes open', blink < 0.45, 'Keep your eyes open');
-    add('neutral', 'Neutral expression', smile < 0.35 && open < 0.2, 'Relax your face into a neutral expression');
+    add('eyes', 'Eyes open', blink < 0.5, 'Keep your eyes open');
+    add('neutral', 'Neutral expression', smile < 0.45 && open < 0.25, 'Relax your face into a neutral expression');
   }
 
   return checks;
