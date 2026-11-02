@@ -217,8 +217,31 @@ button:disabled { opacity: 0.4; cursor: default; }
 .t2 { background: var(--t2); }
 .t3 { background: var(--t3); }
 
-.prop { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+/* Expandable rows */
+.expand > summary { list-style: none; cursor: pointer; }
+.expand > summary::-webkit-details-marker { display: none; }
+.chev {
+  width: 7px; height: 7px; flex: none;
+  border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s;
+}
+.expand[open] .chev { transform: rotate(-135deg) translateY(-1px); }
+.expand > summary:hover .chev { border-color: var(--text); }
+.expand-body {
+  margin: 4px 0 10px; padding: 10px 12px;
+  background: var(--surface); border-radius: 8px;
+  font-size: 14px; line-height: 1.6;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.verdict { font-weight: 500; }
+.expand-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 4px 0; }
+.meter-row { grid-template-columns: 64px 1fr 28px 10px; padding: 3px 0; }
+
+.prop { border-bottom: 1px solid var(--line); }
 .prop:last-child { border-bottom: 0; }
+.prop-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 0; }
+.prop-row > div:first-child { flex: 1; }
 .prop-label { font-size: 14px; }
 .prop-value { display: flex; flex-direction: column; align-items: flex-end; text-align: right; flex: none; }
 .prop-value .num { font-size: 16px; }

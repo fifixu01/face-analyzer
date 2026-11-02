@@ -1,5 +1,6 @@
 import { faceShape } from './analyze.js';
 import { LEGEND } from './draw.js';
+import { PROPORTION_EXPLAINERS, readSymmetry, readThirds } from './explain.js';
 
 const SHAPE_NOTES = {
   Oval: 'Longer than it is wide, with a jaw a little narrower than the cheekbones. A balanced, gently tapering outline.',
@@ -10,24 +11,8 @@ const SHAPE_NOTES = {
   Diamond: 'Cheekbones are the widest point, with a narrower forehead and jaw.',
 };
 
-// [label, metric key, classical guide value, explanation]
-const PROPORTIONS = [
-  ['Eye spacing', 'eyeSpacing', 1.0, 'Gap between the eyes divided by the width of one eye.'],
-  ['Nose width', 'noseToEyeGap', 1.0, 'Nose width divided by the gap between the eyes.'],
-  ['Mouth width', 'mouthToNose', 1.5, 'Mouth width divided by nose width.'],
-  ['Lip ratio', 'lipRatio', 1.6, 'Lower lip height divided by upper lip height.'],
-  ['Jaw to cheekbones', 'jawToCheek', null, 'Jaw width relative to cheekbone width.'],
-  ['Forehead to cheekbones', 'foreheadToCheek', null, 'Forehead width relative to cheekbone width.'],
-];
-
 const pct = (x) => `${Math.round(x * 100)}%`;
 const fix = (x) => x.toFixed(2);
-
-function closeness(value, guide) {
-  const off = Math.abs(value - guide) / guide;
-  if (off < 0.08) return 'Close to guide';
-  return value > guide ? 'Above guide' : 'Below guide';
-}
 
 function summary(m, shape) {
   const regions = { eyes: m.symEyes, brows: m.symBrows, nose: m.symNose, mouth: m.symMouth, jaw: m.symJaw };
@@ -88,12 +73,19 @@ export function renderReport({ summaryEl, detailsEl }, m, { issues, expressions 
 
     <section class="block">
       <h3>Symmetry by region</h3>
-      ${symRows.map(([name, v]) => `
-        <div class="meter-row">
-          <span>${name}</span>
-          <div class="meter"><div style="width:${v}%"></div></div>
-          <span class="num">${Math.round(v)}</span>
-        </div>`).join('')}
+      ${symRows.map(([name, v]) => {
+        const [verdict, text] = readSymmetry(name, v);
+        return `
+        <details class="expand">
+          <summary class="meter-row">
+            <span>${name}</span>
+            <div class="meter"><div style="width:${v}%"></div></div>
+            <span class="num">${Math.round(v)}</span>
+            <i class="chev"></i>
+          </summary>
+          <div class="expand-body"><p class="verdict">${verdict}</p><p>${text}</p></div>
+        </details>`;
+      }).join('')}
       <p class="muted small">No face is perfectly symmetric. Scores in the 80s and 90s are typical, and lighting and expression shift them.</p>
     </section>
 
@@ -109,6 +101,14 @@ export function renderReport({ summaryEl, detailsEl }, m, { issues, expressions 
         <div><dt><i class="t2"></i>Middle</dt><dd>${pct(m.thirdMiddle)}</dd></div>
         <div><dt><i class="t3"></i>Lower</dt><dd>${pct(m.thirdLower)}</dd></div>
       </dl>
+      ${(() => {
+        const [verdict, text] = readThirds(m);
+        return `
+        <details class="expand">
+          <summary class="expand-row"><span>${verdict}</span><i class="chev"></i></summary>
+          <div class="expand-body"><p>${text}</p></div>
+        </details>`;
+      })()}
       <p class="muted small">Hairline to brows, brows to nose base, nose base to chin. The classical guide is equal thirds. ${m.hairlineFound
         ? 'The hairline was detected from the photo.'
         : 'No clear hairline was found (hair pulled back, bangs or a hat can cause this), so the upper third is measured from partway up the forehead and reads short.'}</p>
@@ -116,17 +116,25 @@ export function renderReport({ summaryEl, detailsEl }, m, { issues, expressions 
 
     <section class="block">
       <h3>Proportions</h3>
-      ${PROPORTIONS.map(([label, key, guide, why]) => `
-        <div class="prop">
-          <div>
-            <p class="prop-label">${label}</p>
-            <p class="muted small">${why}</p>
-          </div>
-          <div class="prop-value">
-            <span class="num">${fix(m[key])}</span>
-            ${guide ? `<span class="muted small">${closeness(m[key], guide)} (${guide})</span>` : ''}
-          </div>
-        </div>`).join('')}
+      <p class="muted small">Select a row for what it means.</p>
+      ${PROPORTION_EXPLAINERS.map(({ label, key, guide, measures, read }) => {
+        const [verdict, text] = read(m[key]);
+        return `
+        <details class="expand prop">
+          <summary class="prop-row">
+            <div>
+              <p class="prop-label">${label}</p>
+              <p class="muted small">${verdict}</p>
+            </div>
+            <div class="prop-value">
+              <span class="num">${fix(m[key])}</span>
+              ${guide ? `<span class="muted small">guide ${guide.toFixed(1)}</span>` : ''}
+            </div>
+            <i class="chev"></i>
+          </summary>
+          <div class="expand-body"><p>${text}</p><p class="muted small">${measures}</p></div>
+        </details>`;
+      }).join('')}
     </section>
 
     <p class="muted small footnote">Guides are classical drawing proportions, not a measure of attractiveness. Faces vary widely, and these are 2D estimates from a single photo.</p>
