@@ -2,7 +2,7 @@ import { getLandmarker } from './landmarker.js';
 import { computeMetrics, topExpressions } from './analyze.js';
 import { runChecks, measureLighting } from './quality.js';
 import { drawMesh, drawMeasurements } from './draw.js';
-import { renderReport } from './report.js';
+import { renderReport, renderLegend } from './report.js';
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -43,6 +43,8 @@ let capturing = false;
 // Small offscreen canvas for brightness sampling.
 const lightCtx = Object.assign(document.createElement('canvas'), { width: 96, height: 54 })
   .getContext('2d', { willReadFrequently: true });
+
+renderLegend($('legend'));
 
 const setStatus = (msg) => (els.status.textContent = msg ?? '');
 
@@ -150,7 +152,7 @@ async function runPreviewLoop() {
       els.guide.classList.toggle('good', allGood);
       els.holdBar.style.width = `${(els.autoCapture.checked ? progress : 0) * 100}%`;
       els.guideText.textContent = allGood
-        ? els.autoCapture.checked ? 'Perfect. Hold still…' : 'Perfect. Press Capture'
+        ? els.autoCapture.checked ? 'Hold still' : 'Ready to capture'
         : checks.find((c) => !c.ok).fix;
 
       if (allGood && els.autoCapture.checked && progress >= 1) {

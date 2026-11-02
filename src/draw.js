@@ -81,47 +81,33 @@ export function drawMesh(ctx, landmarks, w, h) {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
-  ctx.strokeStyle = 'rgba(120, 220, 255, 0.35)';
+  ctx.strokeStyle = 'rgba(243, 241, 237, 0.22)';
   ctx.lineWidth = Math.max(1, w / 900);
   strokeEdges(ctx, landmarks, w, h, sparseEdges);
 
-  ctx.strokeStyle = 'rgba(120, 220, 255, 0.8)';
+  ctx.strokeStyle = 'rgba(243, 241, 237, 0.6)';
   ctx.lineWidth = Math.max(1.5, w / 600);
   strokeEdges(ctx, landmarks, w, h, CONTOURS.map(({ start, end }) => [start, end]));
 }
 
-/** Thin vertical midline, drawn live so you can see your symmetry axis. */
-export function drawMidline(ctx, landmarks, w, h) {
-  const a = landmarks[IDX.top];
-  const b = landmarks[IDX.chin];
-  ctx.strokeStyle = 'rgba(255, 209, 102, 0.8)';
-  ctx.lineWidth = Math.max(1, w / 600);
-  ctx.setLineDash([6, 6]);
-  ctx.beginPath();
-  ctx.moveTo(a.x * w, a.y * h);
-  ctx.lineTo(b.x * w, b.y * h);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
 const MEASURE_LINES = [
-  { from: IDX.top, to: IDX.chin, color: '#ffd166' },
-  { from: IDX.foreheadL, to: IDX.foreheadR, color: '#06d6a0' },
-  { from: IDX.cheekL, to: IDX.cheekR, color: '#ef476f' },
-  { from: IDX.jawL, to: IDX.jawR, color: '#4cc9f0' },
-  { from: IDX.eyeInnerL, to: IDX.eyeInnerR, color: '#c77dff' },
+  { from: IDX.top, to: IDX.chin, color: '#d9c49a' },
+  { from: IDX.foreheadL, to: IDX.foreheadR, color: '#a9c2ae' },
+  { from: IDX.cheekL, to: IDX.cheekR, color: '#d4a5a0' },
+  { from: IDX.jawL, to: IDX.jawR, color: '#a3b8c8' },
+  { from: IDX.eyeInnerL, to: IDX.eyeInnerR, color: '#bba9c6' },
 ];
 
 export const LEGEND = [
-  ['#ffd166', 'Face length'],
-  ['#06d6a0', 'Forehead width'],
-  ['#ef476f', 'Cheekbone width'],
-  ['#4cc9f0', 'Jaw width'],
-  ['#c77dff', 'Eye gap'],
+  ['#d9c49a', 'Face length'],
+  ['#a9c2ae', 'Forehead width'],
+  ['#d4a5a0', 'Cheekbone width'],
+  ['#a3b8c8', 'Jaw width'],
+  ['#bba9c6', 'Eye gap'],
 ];
 
 export function drawMeasurements(ctx, landmarks, w, h) {
-  const lw = Math.max(2, w / 400);
+  const lw = Math.max(1.5, w / 550);
   ctx.lineWidth = lw;
   for (const { from, to, color } of MEASURE_LINES) {
     const a = landmarks[from];
@@ -140,7 +126,7 @@ export function drawMeasurements(ctx, landmarks, w, h) {
   }
   // Facial-thirds guide lines.
   ctx.setLineDash([lw * 3, lw * 3]);
-  ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+  ctx.strokeStyle = 'rgba(243, 241, 237, 0.5)';
   const x1 = landmarks[IDX.cheekL].x * w - w * 0.03;
   const x2 = landmarks[IDX.cheekR].x * w + w * 0.03;
   for (const i of [IDX.top, IDX.glabella, IDX.subnasale, IDX.chin]) {

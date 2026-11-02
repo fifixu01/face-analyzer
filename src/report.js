@@ -2,9 +2,9 @@ import { faceShape } from './analyze.js';
 import { LEGEND } from './draw.js';
 
 const SHAPE_NOTES = {
-  Oval: 'Longer than it is wide, with a jaw a little narrower than the cheekbones. Balanced, gently tapering outline.',
+  Oval: 'Longer than it is wide, with a jaw a little narrower than the cheekbones. A balanced, gently tapering outline.',
   Round: 'Width and length are close, with soft, full cheeks and a rounded jawline.',
-  Square: 'Length and width are close, with a strong, wide jaw nearly as broad as the cheekbones.',
+  Square: 'Length and width are close, with a strong jaw nearly as wide as the cheekbones.',
   Oblong: 'Noticeably longer than wide, with fairly straight sides from forehead to jaw.',
   Heart: 'Wider through the forehead and cheekbones, tapering to a narrower chin.',
   Diamond: 'Cheekbones are the widest point, with a narrower forehead and jaw.',
@@ -12,12 +12,12 @@ const SHAPE_NOTES = {
 
 // [label, metric key, classical guide value, explanation]
 const PROPORTIONS = [
-  ['Eye spacing', 'eyeSpacing', 1.0, 'Gap between the eyes ÷ the width of one eye. The classical “rule of fifths” puts it at about 1.'],
-  ['Nose width', 'noseToEyeGap', 1.0, 'Nose width ÷ the gap between the eyes. Classically about 1.'],
-  ['Mouth width', 'mouthToNose', 1.5, 'Mouth width ÷ nose width. Classically about 1.5.'],
-  ['Lip ratio', 'lipRatio', 1.6, 'Lower-lip height ÷ upper-lip height. Classically about 1.6.'],
-  ['Jaw : cheekbones', 'jawToCheek', null, 'How wide the jaw is compared to the cheekbones.'],
-  ['Forehead : cheekbones', 'foreheadToCheek', null, 'How wide the forehead is compared to the cheekbones.'],
+  ['Eye spacing', 'eyeSpacing', 1.0, 'Gap between the eyes divided by the width of one eye.'],
+  ['Nose width', 'noseToEyeGap', 1.0, 'Nose width divided by the gap between the eyes.'],
+  ['Mouth width', 'mouthToNose', 1.5, 'Mouth width divided by nose width.'],
+  ['Lip ratio', 'lipRatio', 1.6, 'Lower lip height divided by upper lip height.'],
+  ['Jaw to cheekbones', 'jawToCheek', null, 'Jaw width relative to cheekbone width.'],
+  ['Forehead to cheekbones', 'foreheadToCheek', null, 'Forehead width relative to cheekbone width.'],
 ];
 
 const pct = (x) => `${Math.round(x * 100)}%`;
@@ -25,34 +25,26 @@ const fix = (x) => x.toFixed(2);
 
 function closeness(value, guide) {
   const off = Math.abs(value - guide) / guide;
-  if (off < 0.08) return ['close to the guide', 'good'];
-  return [value > guide ? 'above the guide' : 'below the guide', 'note'];
+  if (off < 0.08) return 'Close to guide';
+  return value > guide ? 'Above guide' : 'Below guide';
 }
 
-function summary(m, shape, issues) {
-  const parts = [];
-  parts.push(
-    `Your face reads as <strong>${shape.best.toLowerCase()}</strong>` +
-      (shape.runnerUp ? `, with some ${shape.runnerUp.toLowerCase()} traits.` : '.'),
-  );
-
+function summary(m, shape) {
   const regions = { eyes: m.symEyes, brows: m.symBrows, nose: m.symNose, mouth: m.symMouth, jaw: m.symJaw };
   const sorted = Object.entries(regions).sort((a, b) => b[1] - a[1]);
-  parts.push(
-    `Overall symmetry is <strong>${Math.round(m.symmetry)}/100</strong>. ` +
-      `Your ${sorted[0][0]} are the most symmetric area, and your ${sorted.at(-1)[0]} show the most difference between sides.`,
-  );
-
   const thirds = { upper: m.thirdUpper, middle: m.thirdMiddle, lower: m.thirdLower };
-  const biggest = Object.entries(thirds).sort((a, b) => b[1] - a[1])[0];
+  const longest = Object.entries(thirds).sort((a, b) => b[1] - a[1])[0][0];
   const spread = Math.max(...Object.values(thirds)) - Math.min(...Object.values(thirds));
-  parts.push(
-    spread < 0.06
-      ? 'Your facial thirds are very evenly balanced.'
-      : `Your ${biggest[0]} third is the longest of the three.`,
-  );
 
-  return parts.map((p) => `<p>${p}</p>`).join('');
+  return [
+    `Your face reads as ${shape.best.toLowerCase()}, with some ${shape.runnerUp.toLowerCase()} traits.`,
+    `The most symmetric area is your ${sorted[0][0]}, and the least is your ${sorted.at(-1)[0]}.`,
+    spread < 0.06 ? 'Your facial thirds are evenly balanced.' : `Your ${longest} third is the longest of the three.`,
+  ].join(' ');
+}
+
+export function renderLegend(el) {
+  el.innerHTML = LEGEND.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('');
 }
 
 export function renderReport(el, m, { issues, expressions }) {
@@ -63,70 +55,75 @@ export function renderReport(el, m, { issues, expressions }) {
 
   el.innerHTML = `
     ${issues.length ? `
-    <div class="card issues">
-      <h3>This shot may skew the results</h3>
+    <div class="notice">
+      <p class="notice-title">This shot may affect accuracy</p>
       <ul>${issues.map((i) => `<li>${i}</li>`).join('')}</ul>
-      <p class="muted">Try again with these fixed for more accurate numbers.</p>
     </div>` : ''}
 
-    <div class="card summary">
-      <h2>Summary</h2>
-      ${summary(m, shape, issues)}
-      ${expressions.length ? `<p class="muted">Expression detected: ${expressions.join(', ')}</p>` : ''}
-    </div>
-
-    <div class="card">
-      <h3>Face shape: ${shape.best}</h3>
-      <p>${SHAPE_NOTES[shape.best]}</p>
-      <p class="muted">Length : width ${fix(m.lengthToWidth)} · runner-up: ${shape.runnerUp}</p>
-    </div>
-
-    <div class="card">
-      <h3>Symmetry <span class="pill">${Math.round(m.symmetry)}/100</span></h3>
-      ${symRows
-        .map(
-          ([name, v]) => `
-        <div class="row">
-          <span>${name}</span>
-          <div class="bar"><div style="width:${v}%"></div></div>
-          <span class="num">${Math.round(v)}</span>
-        </div>`,
-        )
-        .join('')}
-      <p class="muted">Nobody is perfectly symmetric. Scores in the 80s and 90s are typical. Lighting and expression move this a lot.</p>
-    </div>
-
-    <div class="card">
-      <h3>Facial thirds</h3>
-      <div class="thirds large">
-        <div class="t1" style="flex:${m.thirdUpper}">${pct(m.thirdUpper)}</div>
-        <div class="t2" style="flex:${m.thirdMiddle}">${pct(m.thirdMiddle)}</div>
-        <div class="t3" style="flex:${m.thirdLower}">${pct(m.thirdLower)}</div>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Face shape</p>
+        <p class="hero-value">${shape.best}</p>
       </div>
-      <p class="muted">Upper (forehead to brows), middle (brows to nose base), lower (nose base to chin). The classical guide is equal thirds. The upper third reads short here because the mesh stops below the hairline.</p>
+      <div>
+        <p class="eyebrow">Symmetry</p>
+        <p class="hero-value">${Math.round(m.symmetry)}<span class="of">/100</span></p>
+      </div>
     </div>
 
-    <div class="card">
+    <p class="lede">${summary(m, shape)}</p>
+    ${expressions.length ? `<p class="muted small">Expression detected: ${expressions.join(', ')}</p>` : ''}
+
+    <section class="block">
+      <h3>Face shape</h3>
+      <p>${SHAPE_NOTES[shape.best]}</p>
+      <dl class="facts">
+        <div><dt>Length to width</dt><dd>${fix(m.lengthToWidth)}</dd></div>
+        <div><dt>Second closest</dt><dd>${shape.runnerUp}</dd></div>
+      </dl>
+    </section>
+
+    <section class="block">
+      <h3>Symmetry by region</h3>
+      ${symRows.map(([name, v]) => `
+        <div class="meter-row">
+          <span>${name}</span>
+          <div class="meter"><div style="width:${v}%"></div></div>
+          <span class="num">${Math.round(v)}</span>
+        </div>`).join('')}
+      <p class="muted small">No face is perfectly symmetric. Scores in the 80s and 90s are typical, and lighting and expression shift them.</p>
+    </section>
+
+    <section class="block">
+      <h3>Facial thirds</h3>
+      <div class="thirds">
+        <div class="t1" style="flex:${m.thirdUpper}"></div>
+        <div class="t2" style="flex:${m.thirdMiddle}"></div>
+        <div class="t3" style="flex:${m.thirdLower}"></div>
+      </div>
+      <dl class="facts three">
+        <div><dt><i class="t1"></i>Upper</dt><dd>${pct(m.thirdUpper)}</dd></div>
+        <div><dt><i class="t2"></i>Middle</dt><dd>${pct(m.thirdMiddle)}</dd></div>
+        <div><dt><i class="t3"></i>Lower</dt><dd>${pct(m.thirdLower)}</dd></div>
+      </dl>
+      <p class="muted small">Forehead to brows, brows to nose base, nose base to chin. The classical guide is equal thirds. The upper third reads short because tracking stops below the hairline.</p>
+    </section>
+
+    <section class="block">
       <h3>Proportions</h3>
-      ${PROPORTIONS.map(([label, key, guide, why]) => {
-        const v = m[key];
-        const [note, cls] = guide ? closeness(v, guide) : ['', ''];
-        return `
-          <div class="prop">
-            <div class="prop-head">
-              <span>${label}</span>
-              <span class="num">${fix(v)}${guide ? ` <span class="muted">/ ${guide}</span>` : ''}</span>
-            </div>
-            ${note ? `<span class="tag ${cls}">${note}</span>` : ''}
-            <p class="muted">${why}</p>
-          </div>`;
-      }).join('')}
-    </div>
+      ${PROPORTIONS.map(([label, key, guide, why]) => `
+        <div class="prop">
+          <div>
+            <p class="prop-label">${label}</p>
+            <p class="muted small">${why}</p>
+          </div>
+          <div class="prop-value">
+            <span class="num">${fix(m[key])}</span>
+            ${guide ? `<span class="muted small">${closeness(m[key], guide)} (${guide})</span>` : ''}
+          </div>
+        </div>`).join('')}
+    </section>
 
-    <div class="card legend">
-      ${LEGEND.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}
-    </div>
-
-    <p class="muted small">The “guides” are classical art and drawing proportions, not a measure of attractiveness. Real faces vary widely, and these are 2D estimates from a single photo.</p>
+    <p class="muted small footnote">Guides are classical drawing proportions, not a measure of attractiveness. Faces vary widely, and these are 2D estimates from a single photo.</p>
   `;
 }

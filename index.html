@@ -4,19 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Face Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <main>
       <header>
-        <h1>Face Analyzer</h1>
-        <p class="muted">Runs entirely in your browser. Nothing is uploaded anywhere.</p>
+        <div>
+          <h1>Face Analyzer</h1>
+          <p class="muted small">Runs entirely in your browser. Nothing is uploaded.</p>
+        </div>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-mode="webcam" role="tab">Camera</button>
+          <button class="tab" data-mode="upload" role="tab">Upload</button>
+        </div>
       </header>
-
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-mode="webcam" role="tab">Webcam</button>
-        <button class="tab" data-mode="upload" role="tab">Upload photo</button>
-      </div>
 
       <!-- Webcam: line up the shot, then capture -->
       <section id="webcam-view" class="view">
@@ -38,10 +42,10 @@
           </div>
 
           <aside class="panel">
-            <h3>Get the right shot</h3>
-            <p class="muted small">Every item needs to be green for an accurate analysis.</p>
+            <h3>Before capture</h3>
+            <p class="muted small">Each item should be checked for an accurate reading.</p>
             <ul id="checklist"><li class="muted">Start the camera to begin</li></ul>
-            <label class="toggle"><input type="checkbox" id="auto-capture" checked /> Auto-capture when everything’s green</label>
+            <label class="toggle"><input type="checkbox" id="auto-capture" checked /> Capture automatically when ready</label>
             <button id="capture" class="primary" disabled>Capture</button>
           </aside>
         </div>
@@ -61,6 +65,7 @@
         <div class="result-layout">
           <div>
             <div class="frame"><canvas id="result-canvas"></canvas></div>
+            <div id="legend" class="legend"></div>
             <div class="controls">
               <button id="retake">Try again</button>
               <label class="toggle"><input type="checkbox" id="show-mesh" /> Show mesh</label>
