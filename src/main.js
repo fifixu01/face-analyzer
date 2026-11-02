@@ -34,6 +34,20 @@ const els = {
 const HOLD_MS = 3000; // how long everything must stay green before auto-capture
 const LIGHT_EVERY_MS = 250;
 const GRACE_MS = 200; // a brief flicker out of green doesn't reset the hold timer
+const STILL_TOLERANCE = 0.025; // how far (fraction of face width) the face may drift during the countdown
+const MOVED_MSG_MS = 900; // how long to show "you moved" after a reset
+const ANCHOR_POINTS = [1, 10, 152, 33, 263, 61, 291]; // nose, forehead, chin, eye corners, mouth corners
+
+/** Average distance the anchor points moved since the countdown started, relative to face width. */
+function driftFrom(anchor, lm, w, h) {
+  const faceWidth = Math.hypot((lm[234].x - lm[454].x) * w, (lm[234].y - lm[454].y) * h);
+  let sum = 0;
+  for (const [k, i] of ANCHOR_POINTS.entries()) {
+    sum += Math.hypot((lm[i].x - anchor[k].x) * w, (lm[i].y - anchor[k].y) * h);
+  }
+  return sum / ANCHOR_POINTS.length / faceWidth;
+}
+const snapshot = (lm) => ANCHOR_POINTS.map((i) => ({ x: lm[i].x, y: lm[i].y }));
 
 let mode = 'webcam';
 let stream = null;
@@ -111,6 +125,8 @@ async function runPreviewLoop() {
   let lastLight = 0;
   let greenSince = null;
   let lastGreen = 0;
+  let anchor = null;
+  let movedAt = -Infinity;
 
   const tick = (now) => {
     if (!stream || capturing) return;
@@ -145,15 +161,27 @@ async function runPreviewLoop() {
       // Hold-still timer before auto-capture.
       if (allGood) {
         lastGreen = now;
-        greenSince ??= now;
+        if (greenSince == null) {
+          greenSince = now;
+          anchor = snapshot(lm);
+        } else if (driftFrom(anchor, lm, canvas.width, canvas.height) > STILL_TOLERANCE) {
+          // Moved during the countdown: start over from the new position.
+          greenSince = now;
+          anchor = snapshot(lm);
+          movedAt = now;
+        }
       } else if (now - lastGreen > GRACE_MS) {
         greenSince = null;
+        anchor = null;
       }
+      const justMoved = now - movedAt < MOVED_MSG_MS;
       const progress = greenSince ? Math.min(1, (now - greenSince) / HOLD_MS) : 0;
       els.guide.classList.toggle('good', allGood);
       els.holdBar.style.width = `${(els.autoCapture.checked ? progress : 0) * 100}%`;
       els.guideText.textContent = allGood
-        ? els.autoCapture.checked ? `Hold still  ${Math.max(1, Math.ceil((HOLD_MS - (now - greenSince)) / 1000))}` : 'Ready to capture'
+        ? !els.autoCapture.checked ? 'Ready to capture'
+          : justMoved ? 'You moved. Hold still'
+          : `Hold still  ${Math.max(1, Math.ceil((HOLD_MS - (now - greenSince)) / 1000))}`
         : checks.find((c) => !c.ok).fix;
 
       if (allGood && els.autoCapture.checked && progress >= 1) {
