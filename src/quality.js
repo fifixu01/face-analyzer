@@ -73,7 +73,7 @@ export function runChecks({ lm, w, h, matrix, blendshapes, lighting, framing = t
   const pose = headPose(matrix);
   if (pose) {
     add('yaw', 'Facing the camera', pose.yaw < 10, 'Turn to face the camera straight on');
-    add('pitch', 'Chin level', pose.pitch < 13, 'Keep your chin level. Put the camera at eye height');
+    add('pitch', 'Chin level', pose.pitch < 20, 'Tilt your chin a little toward level');
   }
   add('roll', 'Head upright', rollDeg(lm, w, h) < 7, 'Straighten your head, it’s tilted to one side');
 
