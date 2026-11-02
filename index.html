@@ -14,11 +14,11 @@
       </header>
 
       <div class="tabs" role="tablist">
-        <button class="tab active" data-mode="webcam" role="tab">Live webcam</button>
+        <button class="tab active" data-mode="webcam" role="tab">Webcam</button>
         <button class="tab" data-mode="upload" role="tab">Upload photo</button>
       </div>
 
-      <!-- Live webcam -->
+      <!-- Webcam: line up the shot, then capture -->
       <section id="webcam-view" class="view">
         <div class="live-layout">
           <div class="frame mirrored-frame">
@@ -26,41 +26,23 @@
             <canvas id="live-overlay"></canvas>
             <div id="face-guide" hidden>
               <div class="oval"></div>
-              <span>Center your face in the oval</span>
+              <div class="guide-label">
+                <span id="guide-text">Center your face in the oval</span>
+                <div class="hold"><div id="hold-bar"></div></div>
+              </div>
             </div>
-            <div id="countdown" hidden></div>
+            <div id="flash" hidden></div>
             <div id="cam-placeholder">
               <button id="start-cam" class="primary">Start camera</button>
             </div>
           </div>
 
-          <aside id="live-panel" class="panel">
-            <div id="live-hint" class="hint">Start the camera to begin</div>
-            <div class="stat big">
-              <span class="label">Symmetry</span>
-              <span class="value" id="lv-symmetry">--</span>
-              <div class="bar"><div id="lv-symmetry-bar"></div></div>
-            </div>
-            <div class="stat">
-              <span class="label">Face shape</span>
-              <span class="value" id="lv-shape">--</span>
-            </div>
-            <div class="stat">
-              <span class="label">Length : width</span>
-              <span class="value" id="lv-ltw">--</span>
-            </div>
-            <div class="stat">
-              <span class="label">Eye spacing</span>
-              <span class="value" id="lv-eyes">--</span>
-            </div>
-            <div class="stat">
-              <span class="label">Facial thirds</span>
-              <div class="thirds" id="lv-thirds">
-                <div class="t1"></div><div class="t2"></div><div class="t3"></div>
-              </div>
-            </div>
-            <button id="capture" class="primary" disabled>See my full results</button>
-            <label class="toggle"><input type="checkbox" id="use-timer" /> 3-second timer</label>
+          <aside class="panel">
+            <h3>Get the right shot</h3>
+            <p class="muted small">Every item needs to be green for an accurate analysis.</p>
+            <ul id="checklist"><li class="muted">Start the camera to begin</li></ul>
+            <label class="toggle"><input type="checkbox" id="auto-capture" checked /> Auto-capture when everything’s green</label>
+            <button id="capture" class="primary" disabled>Capture</button>
           </aside>
         </div>
       </section>
@@ -70,7 +52,7 @@
         <label id="dropzone">
           <input type="file" id="file" accept="image/*" hidden />
           <strong>Drop a photo here</strong> or click to choose one
-          <span class="muted">Front-facing, even lighting, hair off your forehead works best</span>
+          <span class="muted">Straight-on, eye level, neutral face, even lighting, hair off your forehead</span>
         </label>
       </section>
 

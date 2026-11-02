@@ -2,8 +2,8 @@
 
 A browser app that maps your face with [MediaPipe Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker) (478 landmarks) and analyzes its geometry. Everything runs on your device, and no images are uploaded.
 
-- **Live webcam:** a face mesh drawn over the video, with symmetry, face shape, facial thirds and eye spacing updating in real time
-- **See my full results:** freezes the frame and opens a detailed report with an annotated photo, symmetry by region, proportions vs. classical guides and a written summary
+- **Webcam:** a guide oval and checklist (distance, centering, head angle, lighting, neutral expression) make sure the shot is right, then it auto-captures
+- **Results:** analysis runs on the frozen frame: a detailed report with an annotated photo, symmetry by region, proportions vs. classical guides and a written summary
 - **Upload:** the same detailed report for a photo
 
 ## Run
@@ -17,7 +17,8 @@ Open the printed localhost URL. Camera access requires `localhost` or HTTPS.
 
 ## Code map
 
-- `src/analyze.js`: landmark indices, metrics, face-shape heuristic, smoothing
+- `src/analyze.js`: landmark indices, metrics, face-shape heuristic
+- `src/quality.js`: capture checks (head pose, lighting, expression, framing)
 - `src/main.js`: webcam loop, capture, upload, view switching
 - `src/report.js`: detailed results page
 - `src/draw.js`: mesh and measurement overlays

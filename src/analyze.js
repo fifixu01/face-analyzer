@@ -122,13 +122,6 @@ export function computeMetrics(landmarks, width, height) {
   };
 }
 
-/** Returns a warning string if the pose is too far off for reliable numbers. */
-export function poseWarning(m) {
-  if (Math.abs(m.yaw) > 0.12) return 'Turn to face the camera straight on';
-  if (Math.abs(m.roll) > 12) return 'Level your head, it’s tilted';
-  return null;
-}
-
 /**
  * Heuristic face-shape classifier. Thresholds are a starting point; tune them on real photos.
  * Landmark 10 sits below the true hairline, so lengthToWidth reads lower than a tape measure would.
@@ -144,21 +137,6 @@ export function faceShape(m) {
   };
   const ranked = Object.entries(s).sort((a, b) => b[1] - a[1]);
   return { best: ranked[0][0], runnerUp: ranked[1][0] };
-}
-
-/** Exponential moving average over every numeric field, to calm live jitter. */
-export function smoother(alpha = 0.15) {
-  let state = null;
-  return {
-    push(m) {
-      if (!state) return (state = { ...m });
-      for (const k of Object.keys(m)) state[k] += alpha * (m[k] - state[k]);
-      return state;
-    },
-    reset() {
-      state = null;
-    },
-  };
 }
 
 export function topExpressions(blendshapes) {

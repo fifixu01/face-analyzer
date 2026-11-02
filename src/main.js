@@ -1,6 +1,7 @@
 import { getLandmarker } from './landmarker.js';
-import { computeMetrics, faceShape, poseWarning, smoother, topExpressions } from './analyze.js';
-import { drawMesh, drawMidline, drawMeasurements } from './draw.js';
+import { computeMetrics, topExpressions } from './analyze.js';
+import { runChecks, measureLighting } from './quality.js';
+import { drawMesh, drawMeasurements } from './draw.js';
 import { renderReport } from './report.js';
 
 const $ = (id) => document.getElementById(id);
@@ -13,11 +14,13 @@ const els = {
   overlay: $('live-overlay'),
   placeholder: $('cam-placeholder'),
   guide: $('face-guide'),
-  hint: $('live-hint'),
-  countdown: $('countdown'),
+  guideText: $('guide-text'),
+  holdBar: $('hold-bar'),
+  flash: $('flash'),
+  checklist: $('checklist'),
+  autoCapture: $('auto-capture'),
   startCam: $('start-cam'),
   capture: $('capture'),
-  useTimer: $('use-timer'),
   file: $('file'),
   dropzone: $('dropzone'),
   resultCanvas: $('result-canvas'),
@@ -25,25 +28,23 @@ const els = {
   showMesh: $('show-mesh'),
   report: $('report'),
   status: $('status'),
-  lv: {
-    symmetry: $('lv-symmetry'),
-    symmetryBar: $('lv-symmetry-bar'),
-    shape: $('lv-shape'),
-    ltw: $('lv-ltw'),
-    eyes: $('lv-eyes'),
-    thirds: $('lv-thirds').children,
-  },
 };
+
+const HOLD_MS = 1200; // how long everything must stay green before auto-capture
+const LIGHT_EVERY_MS = 250;
 
 let mode = 'webcam';
 let stream = null;
 let rafId = null;
 let lastResult = null;
-const live = smoother(0.15);
+let capturing = false;
+
+// Small offscreen canvas for brightness sampling.
+const lightCtx = Object.assign(document.createElement('canvas'), { width: 96, height: 54 })
+  .getContext('2d', { willReadFrequently: true });
 
 const setStatus = (msg) => (els.status.textContent = msg ?? '');
 
-// Load both models up front so the live view and the capture both start fast.
 Promise.all([getLandmarker('VIDEO'), getLandmarker('IMAGE')])
   .then(() => setStatus(''))
   .catch((e) => setStatus(`Couldn’t load the face model: ${e.message}`));
@@ -58,16 +59,12 @@ for (const tab of els.tabs) {
   tab.addEventListener('click', () => {
     mode = tab.dataset.mode;
     els.tabs.forEach((t) => t.classList.toggle('active', t === tab));
-    if (mode === 'webcam') {
-      show(els.webcamView);
-    } else {
-      stopCamera();
-      show(els.uploadView);
-    }
+    stopCamera();
+    show(mode === 'webcam' ? els.webcamView : els.uploadView);
   });
 }
 
-/* ---------- Live webcam ---------- */
+/* ---------- Camera ---------- */
 
 els.startCam.addEventListener('click', startCamera);
 
@@ -84,46 +81,9 @@ async function startCamera() {
   els.video.srcObject = stream;
   await els.video.play();
   els.placeholder.hidden = true;
-  live.reset();
-  showGuide();
-  runLiveLoop();
-}
-
-/* ---------- Face guide (shown until the face first lines up) ---------- */
-
-const GUIDE_HOLD_FRAMES = 12; // ~0.4s aligned before dismissing
-let guideActive = false;
-let alignedFrames = 0;
-
-function showGuide() {
-  guideActive = true;
-  alignedFrames = 0;
   els.guide.hidden = false;
-  els.guide.classList.remove('fade', 'close');
-}
-
-function hideGuide() {
-  guideActive = false;
-  els.guide.classList.add('fade');
-  setTimeout(() => (els.guide.hidden = true), 600);
-}
-
-/** True if the face is roughly centered and roughly filling the oval (normalized coords). */
-function faceInGuide(lm) {
-  const top = lm[10];
-  const chin = lm[152];
-  const cx = (lm[234].x + lm[454].x) / 2;
-  const cy = (top.y + chin.y) / 2;
-  const height = chin.y - top.y;
-  return Math.abs(cx - 0.5) < 0.08 && Math.abs(cy - 0.5) < 0.1 && height > 0.38 && height < 0.75;
-}
-
-function updateGuide(lm) {
-  if (!guideActive) return;
-  const inside = lm && faceInGuide(lm);
-  els.guide.classList.toggle('close', !!inside);
-  alignedFrames = inside ? alignedFrames + 1 : 0;
-  if (alignedFrames >= GUIDE_HOLD_FRAMES) hideGuide();
+  capturing = false;
+  runPreviewLoop();
 }
 
 function stopCamera() {
@@ -133,21 +93,22 @@ function stopCamera() {
   stream = null;
   els.video.srcObject = null;
   els.placeholder.hidden = false;
-  guideActive = false;
   els.guide.hidden = true;
   els.capture.disabled = true;
-  els.hint.textContent = 'Start the camera to begin';
+  els.checklist.innerHTML = '<li class="muted">Start the camera to begin</li>';
 }
 
-async function runLiveLoop() {
+async function runPreviewLoop() {
   const landmarker = await getLandmarker('VIDEO');
   const canvas = els.overlay;
   const ctx = canvas.getContext('2d');
   let lastVideoTime = -1;
-  let lastPanelUpdate = 0;
+  let lighting = null;
+  let lastLight = 0;
+  let greenSince = null;
 
   const tick = (now) => {
-    if (!stream) return;
+    if (!stream || capturing) return;
     const v = els.video;
     if (v.readyState >= 2 && v.currentTime !== lastVideoTime) {
       lastVideoTime = v.currentTime;
@@ -156,24 +117,38 @@ async function runLiveLoop() {
         canvas.height = v.videoHeight;
       }
       const res = landmarker.detectForVideo(v, now);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       const lm = res.faceLandmarks[0];
-      updateGuide(lm);
-      if (lm) {
-        drawMesh(ctx, lm, canvas.width, canvas.height);
-        drawMidline(ctx, lm, canvas.width, canvas.height);
-        const m = live.push(computeMetrics(lm, canvas.width, canvas.height));
-        // Mesh redraws every frame; numbers update ~6x/sec so they're readable.
-        if (now - lastPanelUpdate > 160) {
-          lastPanelUpdate = now;
-          updateLivePanel(m);
-        }
-        els.capture.disabled = false;
-      } else {
-        live.reset();
-        els.hint.textContent = 'No face detected';
-        els.hint.className = 'hint warn';
-        els.capture.disabled = true;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (lm) drawMesh(ctx, lm, canvas.width, canvas.height);
+
+      if (lm && now - lastLight > LIGHT_EVERY_MS) {
+        lastLight = now;
+        lighting = measureLighting(v, lm, lightCtx);
+      }
+      const checks = runChecks({
+        lm,
+        w: canvas.width,
+        h: canvas.height,
+        matrix: res.facialTransformationMatrixes?.[0],
+        blendshapes: res.faceBlendshapes,
+        lighting,
+      });
+      const allGood = checks.every((c) => c.ok);
+      renderChecklist(checks);
+      els.capture.disabled = !lm;
+
+      // Hold-still timer before auto-capture.
+      greenSince = allGood ? (greenSince ?? now) : null;
+      const progress = greenSince ? Math.min(1, (now - greenSince) / HOLD_MS) : 0;
+      els.guide.classList.toggle('good', allGood);
+      els.holdBar.style.width = `${(els.autoCapture.checked ? progress : 0) * 100}%`;
+      els.guideText.textContent = allGood
+        ? els.autoCapture.checked ? 'Perfect. Hold still…' : 'Perfect. Press Capture'
+        : checks.find((c) => !c.ok).fix;
+
+      if (allGood && els.autoCapture.checked && progress >= 1) {
+        capture();
+        return;
       }
     }
     rafId = requestAnimationFrame(tick);
@@ -182,38 +157,22 @@ async function runLiveLoop() {
   rafId = requestAnimationFrame(tick);
 }
 
-function updateLivePanel(m) {
-  if (guideActive) {
-    els.hint.textContent = 'Line your face up with the oval';
-    els.hint.className = 'hint';
-    return;
-  }
-  const warning = poseWarning(m);
-  els.hint.textContent = warning ?? 'Tracking. Hold still for the best numbers';
-  els.hint.className = warning ? 'hint warn' : 'hint ok';
-
-  const sym = Math.round(m.symmetry);
-  els.lv.symmetry.textContent = sym;
-  els.lv.symmetryBar.style.width = `${sym}%`;
-  els.lv.shape.textContent = faceShape(m).best;
-  els.lv.ltw.textContent = m.lengthToWidth.toFixed(2);
-  els.lv.eyes.textContent = `${m.eyeSpacing.toFixed(2)} eye-widths`;
-  const [t1, t2, t3] = els.lv.thirds;
-  t1.style.flex = m.thirdUpper;
-  t2.style.flex = m.thirdMiddle;
-  t3.style.flex = m.thirdLower;
+let lastChecklistKey = '';
+function renderChecklist(checks) {
+  const key = checks.map((c) => `${c.id}${c.ok}`).join();
+  if (key === lastChecklistKey) return; // avoid rebuilding the DOM every frame
+  lastChecklistKey = key;
+  els.checklist.innerHTML = checks
+    .map((c) => `<li class="${c.ok ? 'ok' : 'bad'}"><span class="dot"></span>${c.ok ? c.label : c.fix}</li>`)
+    .join('');
 }
 
-els.capture.addEventListener('click', async () => {
-  els.capture.disabled = true;
-  if (els.useTimer.checked) {
-    els.countdown.hidden = false;
-    for (let n = 3; n > 0; n--) {
-      els.countdown.textContent = n;
-      await new Promise((r) => setTimeout(r, 1000));
-    }
-    els.countdown.hidden = true;
-  }
+els.capture.addEventListener('click', () => capture());
+
+async function capture() {
+  if (capturing) return;
+  capturing = true;
+  cancelAnimationFrame(rafId);
   // Freeze the frame, mirrored to match what the user saw on screen.
   const v = els.video;
   const still = document.createElement('canvas');
@@ -223,9 +182,11 @@ els.capture.addEventListener('click', async () => {
   ctx.translate(still.width, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(v, 0, 0);
+  els.flash.hidden = false;
+  setTimeout(() => (els.flash.hidden = true), 250);
   stopCamera();
-  await analyzeStill(still);
-});
+  await analyzeStill(still, { framing: true });
+}
 
 /* ---------- Upload ---------- */
 
@@ -250,12 +211,12 @@ async function loadFile(file) {
   still.height = Math.round(bitmap.height * scale);
   still.getContext('2d').drawImage(bitmap, 0, 0, still.width, still.height);
   els.file.value = '';
-  await analyzeStill(still);
+  await analyzeStill(still, { framing: false });
 }
 
 /* ---------- Full results ---------- */
 
-async function analyzeStill(still) {
+async function analyzeStill(still, { framing }) {
   setStatus('Analyzing…');
   const landmarker = await getLandmarker('IMAGE');
   const res = landmarker.detect(still);
@@ -268,9 +229,20 @@ async function analyzeStill(still) {
   setStatus('');
   lastResult = { still, lm };
   drawResult();
+
+  // Re-check quality on the frozen frame itself. Framing (distance/centering) only matters for the webcam guide.
+  const checks = runChecks({
+    lm,
+    w: still.width,
+    h: still.height,
+    matrix: res.facialTransformationMatrixes?.[0],
+    blendshapes: res.faceBlendshapes,
+    lighting: measureLighting(still, lm, lightCtx),
+    framing: false,
+  });
   const m = computeMetrics(lm, still.width, still.height);
   renderReport(els.report, m, {
-    warning: poseWarning(m),
+    issues: checks.filter((c) => !c.ok).map((c) => c.fix),
     expressions: topExpressions(res.faceBlendshapes),
   });
   show(els.resultView);

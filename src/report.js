@@ -29,7 +29,7 @@ function closeness(value, guide) {
   return [value > guide ? 'above the guide' : 'below the guide', 'note'];
 }
 
-function summary(m, shape, warning) {
+function summary(m, shape, issues) {
   const parts = [];
   parts.push(
     `Your face reads as <strong>${shape.best.toLowerCase()}</strong>` +
@@ -52,20 +52,26 @@ function summary(m, shape, warning) {
       : `Your ${biggest[0]} third is the longest of the three.`,
   );
 
-  if (warning) parts.push(`<em>Heads up: ${warning.toLowerCase()}. That can skew these numbers, so try another capture.</em>`);
   return parts.map((p) => `<p>${p}</p>`).join('');
 }
 
-export function renderReport(el, m, { warning, expressions }) {
+export function renderReport(el, m, { issues, expressions }) {
   const shape = faceShape(m);
   const symRows = [
     ['Eyes', m.symEyes], ['Brows', m.symBrows], ['Nose', m.symNose], ['Mouth', m.symMouth], ['Jaw', m.symJaw],
   ];
 
   el.innerHTML = `
+    ${issues.length ? `
+    <div class="card issues">
+      <h3>This shot may skew the results</h3>
+      <ul>${issues.map((i) => `<li>${i}</li>`).join('')}</ul>
+      <p class="muted">Try again with these fixed for more accurate numbers.</p>
+    </div>` : ''}
+
     <div class="card summary">
       <h2>Summary</h2>
-      ${summary(m, shape, warning)}
+      ${summary(m, shape, issues)}
       ${expressions.length ? `<p class="muted">Expression detected: ${expressions.join(', ')}</p>` : ''}
     </div>
 

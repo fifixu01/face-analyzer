@@ -7,7 +7,7 @@ const MODEL_URL =
 let filesetPromise;
 const instances = {};
 
-/** Returns a FaceLandmarker for 'VIDEO' (live) or 'IMAGE' (stills). Created once, then cached. */
+/** Returns a FaceLandmarker for 'VIDEO' (camera preview) or 'IMAGE' (stills). Created once, then cached. */
 export function getLandmarker(runningMode) {
   filesetPromise ??= FilesetResolver.forVisionTasks(WASM_URL);
   instances[runningMode] ??= filesetPromise.then((fileset) =>
@@ -15,7 +15,8 @@ export function getLandmarker(runningMode) {
       baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
       runningMode,
       numFaces: 1,
-      outputFaceBlendshapes: runningMode === 'IMAGE',
+      outputFaceBlendshapes: true, // expression checks (eyes open, neutral face)
+      outputFacialTransformationMatrixes: true, // head angle checks
     }),
   );
   return instances[runningMode];
