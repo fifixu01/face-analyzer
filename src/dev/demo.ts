@@ -38,12 +38,15 @@ export function makeDemoResult(): StillResult {
     metrics: {
       symmetry: 88, symEyes: 93, symBrows: 86, symNose: 90, symMouth: 81, symJaw: 87,
       hairlineFound: 1,
-      outlineLength: 1.11, outlineForehead: 0.8, outlineMidface: 0.87, outlineJaw: 0.73, outlineChin: 0.41, outlineWidestAt: 0.45,
+      outlineLength: 1.18, outlineForehead: 0.9, outlineMidface: 0.92, outlineJaw: 0.78, outlineChin: 0.56, outlineWidestAt: 0.45,
       thirdUpper: 0.31, thirdMiddle: 0.32, thirdLower: 0.37,
-      eyeSpacing: 1.16, noseToEyeGap: 0.95, mouthToNose: 1.52, lipRatio: 1.35,
-      canthalTilt: 7.2, eyeAspect: 0.26, eyeSize: 0.215, browHeight: 0.52,
-      noseBridge: 0.58, noseLength: 0.29, noseCurve: 0.018, noseTipOffset: 0.011,
-      lipFullness: 0.36, philtrum: 0.22, chinLength: 0.41, yaw: 0, roll: 0,
+      eyeSpacing: 1.38, noseToEyeGap: 0.92, mouthToNose: 1.42, lipRatio: 1.35, eyeSize: 0.175, browHeight: 0.6,
+      eyeAspect: 0.25, eyeUpperArc: 0.13, eyeLowerArc: 0.11, eyeLidPeak: 0.48, canthalTilt: 5.6,
+      irisSize: 0.5, irisWhiteBelow: -0.04, irisWhiteAbove: -0.2,
+      browArch: 0.15, browPeak: 0.66, browTilt: -4.2, browThickness: 0.24,
+      noseBridge: 0.3, noseTipWidth: 0.26, noseLength: 0.295, noseTipLift: 0.22, noseProjection: 0.74, noseDorsum: 0.02, noseCurve: 0.012,
+      bowDepth: 0.19, bowWidth: 0.28, mouthCornerTilt: -0.4,
+      lipFullness: 0.43, philtrum: 0.17, chinLength: 0.54, yaw: 0, roll: 0,
     },
   } as unknown as StillResult;
 }

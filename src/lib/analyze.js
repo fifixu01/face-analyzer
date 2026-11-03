@@ -1,4 +1,5 @@
 import { outlineMetrics } from './outline.js';
+import { featureMetrics } from './features.js';
 
 export { faceShape } from './outline.js';
 
@@ -42,7 +43,7 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 /** Pixel-space landmarks rotated so the eyes are level (removes head tilt). */
 function levelPoints(landmarks, width, height) {
-  const px = landmarks.map((p) => ({ x: p.x * width, y: p.y * height }));
+  const px = landmarks.map((p) => ({ x: p.x * width, y: p.y * height, z: (p.z ?? 0) * width }));
   const a = px[IDX.eyeOuterL];
   const b = px[IDX.eyeOuterR];
   const angle = Math.atan2(b.y - a.y, b.x - a.x);
@@ -50,9 +51,10 @@ function levelPoints(landmarks, width, height) {
   const cy = (a.y + b.y) / 2;
   const cos = Math.cos(-angle);
   const sin = Math.sin(-angle);
-  const level = px.map(({ x, y }) => ({
+  const level = px.map(({ x, y, z }) => ({
     x: cx + (x - cx) * cos - (y - cy) * sin,
     y: cy + (x - cx) * sin + (y - cy) * cos,
+    z,
   }));
   return { level, rollDeg: (angle * 180) / Math.PI };
 }
@@ -95,7 +97,6 @@ export function computeMetrics(landmarks, width, height) {
   // Use the detected hairline when we have it; otherwise the top of the mesh.
   const hairlineFound = landmarks.length > IDX.hairline;
   const topI = hairlineFound ? IDX.hairline : IDX.top;
-  const faceLength = d(topI, IDX.chin);
   const cheekWidth = d(IDX.cheekL, IDX.cheekR);
 
   const upper = level[IDX.glabella].y - level[topI].y;
@@ -107,12 +108,6 @@ export function computeMetrics(landmarks, width, height) {
   const eyeGap = d(IDX.eyeInnerL, IDX.eyeInnerR);
   const noseWidth = d(IDX.noseL, IDX.noseR);
   const mouthWidth = d(IDX.mouthL, IDX.mouthR);
-
-  // Eye shape. Canthal tilt: degrees the outer corner sits above the inner corner (positive = upturned).
-  // In image coords y grows downward, so "above" means a smaller y.
-  const tiltL = Math.atan2(level[IDX.eyeInnerL].y - level[IDX.eyeOuterL].y, Math.abs(level[IDX.eyeInnerL].x - level[IDX.eyeOuterL].x));
-  const tiltR = Math.atan2(level[IDX.eyeInnerR].y - level[IDX.eyeOuterR].y, Math.abs(level[IDX.eyeInnerR].x - level[IDX.eyeOuterR].x));
-  const eyeOpen = (d(IDX.eyeTopL, IDX.eyeBottomL) + d(IDX.eyeTopR, IDX.eyeBottomR)) / 2;
 
   // Brows: gap from underside of brow to upper lid, relative to eye width.
   const browGap = (d(IDX.browLowL, IDX.eyeTopL) + d(IDX.browLowR, IDX.eyeTopR)) / 2;
@@ -150,17 +145,14 @@ export function computeMetrics(landmarks, width, height) {
     noseToEyeGap: noseWidth / eyeGap,
     mouthToNose: mouthWidth / noseWidth,
     lipRatio: d(IDX.lowerLipTop, IDX.lowerLipBottom) / d(IDX.upperLipTop, IDX.upperLipBottom),
-    canthalTilt: (((tiltL + tiltR) / 2) * 180) / Math.PI,
-    eyeAspect: eyeOpen / eyeWidth, // higher = rounder eyes
     eyeSize: eyeWidth / cheekWidth, // eye width relative to face width
     browHeight: browGap / eyeWidth,
-    noseBridge: d(IDX.bridgeL, IDX.bridgeR) / noseWidth, // upper bridge width vs nostril width
-    noseLength: noseLength / faceLength,
     noseCurve: bridgeCurve / noseLength,
     noseTipOffset: Math.abs(level[IDX.noseTip].x - midX) / cheekWidth,
     lipFullness: d(IDX.upperLipTop, IDX.lowerLipBottom) / mouthWidth,
     philtrum: d(IDX.subnasale, IDX.upperLipTop) / lowerThird,
     chinLength: d(IDX.lowerLipBottom, IDX.chin) / lowerThird,
+    ...featureMetrics(level),
     yaw: yawRatio(level),
     roll: rollDeg,
   };

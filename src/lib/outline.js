@@ -17,14 +17,15 @@ export const LEVELS = { forehead: 0.15, midface: 0.65, jaw: 0.8, chin: 0.9 };
 
 /**
  * "Typical" value and spread for each outline feature. Shapes are defined as departures from these.
- * ROUGH ESTIMATES: tune them with real results (aim for the average person landing on Oval).
+ * The average face lands on Oval.
  */
 const TYPICAL = {
-  length: { mean: 1.08, spread: 0.06 }, // mesh top-to-chin length / widest width
-  forehead: { mean: 0.8, spread: 0.04 }, // widths below are a share of the widest width
-  midface: { mean: 0.88, spread: 0.04 },
-  jaw: { mean: 0.74, spread: 0.04 },
-  chin: { mean: 0.42, spread: 0.05 },
+  // Means are measured on MediaPipe's average face (its canonical face mesh); spreads are estimates.
+  length: { mean: 1.143, spread: 0.06 }, // mesh top-to-chin length / widest width
+  forehead: { mean: 0.9, spread: 0.035 }, // widths below are a share of the widest width
+  midface: { mean: 0.928, spread: 0.03 },
+  jaw: { mean: 0.793, spread: 0.035 },
+  chin: { mean: 0.584, spread: 0.05 },
 };
 
 // Each shape's outline, in "spreads away from typical". 0 = typical.

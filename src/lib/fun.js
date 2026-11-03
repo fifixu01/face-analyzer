@@ -2,15 +2,15 @@
 // Not scientific. It's a playful read of the same measurements as the rest of the report.
 
 // Each feature becomes a z-score: how far from a typical value, in "typical spreads".
-// Typical values are rough estimates for MediaPipe measurements and can be tuned.
+// Typical values come from MediaPipe's average face; spreads are estimates.
 const FEATURES = {
-  tilt: { key: 'canthalTilt', mean: 4, spread: 4, high: 'upturned outer eye corners', low: 'level or softly angled eye corners' },
-  round: { key: 'eyeAspect', mean: 0.3, spread: 0.05, high: 'round, open eyes', low: 'almond-shaped eyes' },
-  eyes: { key: 'eyeSize', mean: 0.21, spread: 0.02, high: 'large eyes for your face', low: 'smaller, refined eyes' },
-  jaw: { key: 'outlineJaw', mean: 0.74, spread: 0.04, high: 'a broad, soft jaw', low: 'a tapered jaw and chin' },
-  long: { key: 'outlineLength', mean: 1.08, spread: 0.06, high: 'a longer face', low: 'a shorter, rounder face' },
+  tilt: { key: 'canthalTilt', mean: 1.7, spread: 3, high: 'upturned outer eye corners', low: 'level or softly angled eye corners' },
+  round: { key: 'eyeAspect', mean: 0.26, spread: 0.035, high: 'round, open eyes', low: 'almond-shaped eyes' },
+  eyes: { key: 'eyeSize', mean: 0.169, spread: 0.012, high: 'large eyes for your face', low: 'smaller, refined eyes' },
+  jaw: { key: 'outlineJaw', mean: 0.793, spread: 0.035, high: 'a broad, soft jaw', low: 'a tapered jaw and chin' },
+  long: { key: 'outlineLength', mean: 1.143, spread: 0.06, high: 'a longer face', low: 'a shorter, rounder face' },
   lower: { key: 'thirdLower', mean: 0.34, spread: 0.03, high: 'a longer lower face', low: 'a compact lower face' },
-  mouth: { key: 'mouthToNose', mean: 1.5, spread: 0.15, high: 'a wide mouth', low: 'a small mouth' },
+  mouth: { key: 'mouthToNose', mean: 1.375, spread: 0.12, high: 'a wide mouth', low: 'a small mouth' },
 };
 
 // Weights: positive means "more of this feature fits the animal", negative means "less".

@@ -120,8 +120,8 @@ export function Results({ result, onRetake }: { result: StillResult; onRetake: (
         </Block>
 
         <motion.p variants={rise} className="border-t border-line pt-4 text-[13px] text-muted">
-          Guides are classical drawing proportions, not a measure of attractiveness. Faces vary widely, and these are 2D
-          estimates from a single photo.
+          The shaded part of each bar is the typical range, centered on MediaPipe’s average face. These are 2D
+          estimates from a single photo, not a measure of attractiveness.
         </motion.p>
       </div>
 
@@ -297,10 +297,12 @@ function Thirds({ m }: { m: Metrics }) {
 type Group = (typeof FEATURE_GROUPS)[number];
 
 function FeatureGroup({ group, m, defaultOpen }: { group: Group; m: Metrics; defaultOpen: boolean }) {
-  const rows = group.items.map((it) => {
-    const value = m[it.key as keyof Metrics] as number;
-    return { ...it, value, reading: it.read(value) as [string, string] };
-  });
+  const rows = group.items
+    .map((it) => {
+      const value = m[it.key as keyof Metrics] as number;
+      return { ...it, value, reading: Number.isFinite(value) ? (it.read(value) as [string, string, string]) : null };
+    })
+    .filter((r) => r.reading);
   return (
     <Expandable
       defaultOpen={defaultOpen}
@@ -309,35 +311,49 @@ function FeatureGroup({ group, m, defaultOpen }: { group: Group; m: Metrics; def
       header={
         <div className="flex items-center gap-3">
           <span className="flex-none font-semibold">{group.title}</span>
-          <span className="min-w-0 flex-1 truncate text-right text-[13px] text-muted">
-            {rows.map((r) => r.reading[0]).join(' · ')}
-          </span>
+          <span className="min-w-0 flex-1 truncate text-right text-[13px] text-muted">{group.headline(m)}</span>
         </div>
       }
     >
       <div className="border-t border-line px-3.5 pb-1">
-        {rows.map(({ label, guide, format, measures, value, reading: [verdict, text] }) => (
+        {rows.map(({ label, format, measures, typical, spread, value, reading }) => (
           <Expandable
             key={label}
             className="border-b border-line last:border-b-0"
             headerClassName="py-2.5"
             header={
-              <div className="flex items-center justify-between gap-4">
-                <div>
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1.5">
+                <div className="min-w-0">
                   <p className="text-sm">{label}</p>
-                  <p className="text-[13px] text-muted">{verdict}</p>
+                  <p className="text-[13px] text-muted">{reading![0]}</p>
                 </div>
-                <div className="flex flex-none flex-col items-end">
-                  <span className="tabular text-base">{format(value)}</span>
-                  {guide != null && <span className="text-[13px] text-muted">guide {(guide as number).toFixed(1)}</span>}
-                </div>
+                <span className="tabular text-right text-base">{format(value)}</span>
+                <Scale value={value} typical={typical} spread={spread} />
               </div>
             }
           >
-            <Explain note={measures}>{text}</Explain>
+            <Explain note={measures}>{reading![1]}</Explain>
           </Expandable>
         ))}
       </div>
     </Expandable>
+  );
+}
+
+/** Where a value sits relative to typical: the shaded middle is the typical range. */
+function Scale({ value, typical, spread }: { value: number; typical: number; spread: number }) {
+  const range = 2.5 * spread;
+  const pos = Math.max(0, Math.min(1, (value - typical + range) / (2 * range)));
+  const band = (0.75 * spread) / (2 * range);
+  return (
+    <div className="relative col-span-2 h-1 rounded bg-meter" aria-hidden>
+      <div className="absolute inset-y-0 rounded bg-muted/35" style={{ left: `${(0.5 - band) * 100}%`, right: `${(0.5 - band) * 100}%` }} />
+      <motion.div
+        className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sage"
+        initial={{ left: '50%' }}
+        animate={{ left: `${pos * 100}%` }}
+        transition={{ type: 'spring', stiffness: 140, damping: 18, delay: 0.1 }}
+      />
+    </div>
   );
 }
