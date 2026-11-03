@@ -14,14 +14,25 @@ npm run dev
 
 Open the printed localhost URL. Camera access requires `localhost` or HTTPS.
 
+## Stack
+
+React 19 + TypeScript, [Motion](https://motion.dev) for animation, Tailwind CSS v4, Vite. Face tracking runs locally with MediaPipe.
+
+Preview the results screen without a camera: run `npm run dev` and open `http://localhost:5173/?demo`.
+
 ## Code map
 
-- `src/analyze.js`: landmark indices, metrics, face-shape heuristic
-- `src/quality.js`: capture checks (head pose, lighting, expression, framing)
-- `src/main.js`: home, camera loop, capture, view switching
-- `src/report.js`: detailed results page
-- `src/draw.js`: mesh and measurement overlays
-- `src/landmarker.js`: MediaPipe model loading
+- `src/App.tsx`: screens (home, camera, analyzing, results) and transitions
+- `src/components/`: `Home`, `CameraView` (preview loop, checklist, auto-capture), `Results`, `AnimalCard`, `FaceArt`, shared `ui`
+- `src/lib/`: framework-free logic
+  - `analyze.js`: landmark indices, metrics, face-shape heuristic
+  - `quality.js`: capture checks (head pose, lighting, expression, framing)
+  - `hairline.js`: hairline detection
+  - `explain.js`: plain-language readings for each measurement
+  - `fun.js`: animal face type
+  - `draw.js`: mesh and measurement overlays
+  - `analyzeStill.js`: full analysis of a captured frame
+- `src/index.css`: Tailwind theme (colors, fonts)
 
 ## Known limitations
 

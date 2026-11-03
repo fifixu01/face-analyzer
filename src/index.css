@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+/* Dark, low-contrast palette: warm charcoal with muted accents. */
+@theme {
+  --color-bg: #191817;
+  --color-surface: #211f1e;
+  --color-raised: #2a2826;
+  --color-line: #2f2d2b;
+  --color-ink: #d3cec6;
+  --color-ink-strong: #e6e1d9;
+  --color-muted: #847e76;
+  --color-sage: #8fa898;
+  --color-sage-soft: #263029;
+  --color-ochre: #c9a774;
+  --color-ochre-soft: #2e2921;
+  --color-meter: #302e2b;
+  --color-frame: #121110;
+
+  /* Feature colors, shared with the canvas drawing in lib/draw.js */
+  --color-amber: #e0b66e;
+  --color-teal: #6cc4b6;
+  --color-coral: #de867a;
+  --color-t1: #7fa3d6;
+  --color-t2: #b296d6;
+  --color-t3: #d98a7c;
+
+  --font-sans: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-bg font-sans text-ink antialiased;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

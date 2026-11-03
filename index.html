@@ -10,91 +10,9 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <main>
-      <!-- Home -->
-      <section id="home-view" class="view home">
-        <div class="glow" aria-hidden="true"></div>
-        <p class="badge">Private · Fifi will not steal ur pics dont worry</p>
-
-        <svg class="face-art" viewBox="0 0 160 200" aria-hidden="true">
-          <ellipse class="art-oval" cx="80" cy="100" rx="58" ry="78" />
-          <g class="art-dots">
-            <circle cx="80" cy="34" r="1.6" /><circle cx="52" cy="46" r="1.6" /><circle cx="108" cy="46" r="1.6" />
-            <circle cx="34" cy="96" r="1.6" /><circle cx="126" cy="96" r="1.6" /><circle cx="46" cy="140" r="1.6" />
-            <circle cx="114" cy="140" r="1.6" /><circle cx="80" cy="172" r="1.6" /><circle cx="80" cy="66" r="1.6" />
-          </g>
-          <path class="art-brow" d="M46 74 Q58 66 70 72" />
-          <path class="art-brow" d="M90 72 Q102 66 114 74" />
-          <path class="art-eye" d="M48 88 Q58 80 68 88 Q58 94 48 88 Z" />
-          <path class="art-eye" d="M92 88 Q102 80 112 88 Q102 94 92 88 Z" />
-          <path class="art-nose" d="M80 92 L80 116 Q80 121 74 120" />
-          <path class="art-lips" d="M64 138 Q72 132 80 136 Q88 132 96 138 Q80 150 64 138 Z" />
-        </svg>
-
-        <h1 class="title">Face Analyzer</h1>
-        <p class="tagline">see how much you mog!</p>
-        <button id="start-cam" class="primary big">Start camera</button>
-      </section>
-
-      <!-- Top bar for camera and results screens -->
-      <header id="topbar" hidden>
-        <button id="home-link" class="brand" title="Back to home">Face Analyzer</button>
-        <p class="muted small">Nothing leaves your device</p>
-      </header>
-
-      <!-- Camera: line up the shot, then capture -->
-      <section id="webcam-view" class="view" hidden>
-        <div class="live-layout">
-          <div class="frame mirrored-frame">
-            <video id="video" playsinline muted></video>
-            <canvas id="live-overlay"></canvas>
-            <div id="face-guide" hidden>
-              <div class="oval"></div>
-              <div class="guide-label">
-                <span id="guide-text">Center your face in the oval</span>
-                <div class="hold"><div id="hold-bar"></div></div>
-              </div>
-            </div>
-            <div id="flash" hidden></div>
-            <div id="cam-placeholder">
-              <p id="cam-msg" class="muted">Starting camera…</p>
-              <button id="retry-cam" hidden>Try again</button>
-            </div>
-          </div>
-
-          <aside class="panel">
-            <h3>Before capture</h3>
-            <p class="muted small">The photo is taken once every item is checked.</p>
-            <ul id="checklist"></ul>
-            <div class="panel-foot">
-              <label class="toggle"><input type="checkbox" id="auto-capture" checked /> Capture automatically</label>
-              <button id="capture" class="primary" hidden>Capture</button>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <!-- Results -->
-      <section id="result-view" class="view" hidden>
-        <div class="result-layout">
-          <div>
-            <div class="frame"><canvas id="result-canvas"></canvas></div>
-            <div id="legend" class="legend"></div>
-            <div class="controls">
-              <button id="retake">Try again</button>
-              <label class="toggle"><input type="checkbox" id="show-mesh" /> Show mesh</label>
-            </div>
-            <div id="summary"></div>
-          </div>
-          <div id="report"></div>
-        </div>
-      </section>
-
-      <p id="status" class="muted">Loading face model…</p>
-    </main>
-    <script type="module" src="/src/main.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
