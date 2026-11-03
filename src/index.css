@@ -1,19 +1,20 @@
 @import 'tailwindcss';
 
-/* Dark, low-contrast palette: warm charcoal with muted accents. */
+/* Dark, low-contrast palette: warm charcoal with soft pastel accents. */
 @theme {
-  --color-bg: #191817;
-  --color-surface: #211f1e;
-  --color-raised: #2a2826;
-  --color-line: #2f2d2b;
-  --color-ink: #d3cec6;
-  --color-ink-strong: #e6e1d9;
-  --color-muted: #847e76;
-  --color-sage: #8fa898;
-  --color-sage-soft: #263029;
-  --color-ochre: #c9a774;
+  --color-bg: #171615;
+  --color-surface: #1f1d1c;
+  --color-raised: #282624;
+  --color-line: #2e2c2a;
+  --color-ink: #d6d1c9;
+  --color-ink-strong: #ebe6de;
+  --color-muted: #8a847c;
+  --color-faint: #5f5a54;
+  --color-sage: #93ad9c;
+  --color-sage-soft: #24302a;
+  --color-ochre: #cfae7b;
   --color-ochre-soft: #2e2921;
-  --color-meter: #302e2b;
+  --color-meter: #2c2a27;
   --color-frame: #121110;
 
   /* Feature colors, shared with the canvas drawing in lib/draw.js */
@@ -26,6 +27,8 @@
 
   --font-sans: 'Nunito', system-ui, -apple-system, sans-serif;
   --font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+
+  --radius-card: 1.5rem;
 }
 
 html {
@@ -38,8 +41,41 @@ body {
   -webkit-text-size-adjust: 100%;
   font-size: 15px;
   line-height: 1.55;
+  /* A faint ambient glow at the top of every page. */
+  background-image:
+    radial-gradient(60rem 28rem at 15% -8rem, rgba(147, 173, 156, 0.07), transparent 70%),
+    radial-gradient(50rem 26rem at 90% -6rem, rgba(178, 150, 214, 0.06), transparent 70%);
+  background-repeat: no-repeat;
+  min-height: 100svh;
+}
+
+::selection {
+  background: rgba(147, 173, 156, 0.3);
+}
+
+:focus-visible {
+  outline: 2px solid rgba(147, 173, 156, 0.7);
+  outline-offset: 2px;
+  border-radius: 10px;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Soft card: hairline border, a whisper of top highlight, deep diffuse shadow. */
+@utility card {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 40%), var(--color-surface);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 18px 40px -24px rgba(0, 0, 0, 0.55);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }

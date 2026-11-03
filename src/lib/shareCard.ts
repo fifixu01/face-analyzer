@@ -215,7 +215,7 @@ export function cardData(m: Metrics) {
     thirdsVerdict: thirdsVerdict as string,
     groups: FEATURE_GROUPS.map((g) => ({
       title: g.title,
-      labels: g.items.map((it) => it.read(m[it.key])[0] as string),
+      labels: [g.headline(m) as string],
     })),
     date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
   };

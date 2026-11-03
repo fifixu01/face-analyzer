@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { THEMES, cardData, loadThemeFonts, renderCard } from '../lib/shareCard';
-import { Button } from './ui';
+import { Button, Icon } from './ui';
 
 type Metrics = Parameters<typeof cardData>[0];
 
@@ -88,7 +88,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
             exit={{ opacity: 0, y: 60 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             // Phones: a bottom sheet. Wider screens: a centered dialog with the preview beside the controls.
-            className="grid max-h-[92svh] w-full max-w-[860px] grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto rounded-t-3xl border border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] min-[720px]:grid-cols-[minmax(0,1fr)_260px] min-[720px]:gap-6 min-[720px]:rounded-3xl min-[720px]:p-6"
+            className="grid max-h-[92svh] w-full max-w-[860px] grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto rounded-t-[28px] border border-line bg-surface p-4 shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.6)] pb-[calc(1rem+env(safe-area-inset-bottom))] min-[720px]:grid-cols-[minmax(0,1fr)_260px] min-[720px]:gap-6 min-[720px]:rounded-[28px] min-[720px]:p-6"
           >
             {/* Preview */}
             <div className="order-2 flex items-start justify-center rounded-2xl bg-frame p-3 min-[720px]:order-none min-[720px]:p-4">
@@ -119,10 +119,8 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                   <p className="font-display text-2xl font-semibold text-ink-strong">Share results</p>
                   <p className="text-[13px] text-muted">Pick a style. Your photo isn’t included.</p>
                 </div>
-                <button onClick={onClose} aria-label="Close" className="-m-1 cursor-pointer rounded-full p-2.5 text-muted hover:text-ink">
-                  <svg viewBox="0 0 12 12" className="h-3.5 w-3.5" aria-hidden>
-                    <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                  </svg>
+                <button onClick={onClose} aria-label="Close" className="-m-1 grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-line bg-raised/60 text-muted hover:text-ink">
+                  <Icon name="close" />
                 </button>
               </div>
 
@@ -171,12 +169,16 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                       exit={{ opacity: 0, y: -6 }}
                       className="block"
                     >
-                      {saved ? 'Saved!' : 'Save image'}
+                      <span className="flex items-center gap-2">
+                        <Icon name={saved ? 'check' : 'download'} />
+                        {saved ? 'Saved!' : 'Save image'}
+                      </span>
                     </motion.span>
                   </AnimatePresence>
                 </Button>
                 {canShareFiles && (
                   <Button className="flex-1 py-3 min-[720px]:flex-none min-[720px]:py-2.5" onClick={share} disabled={!preview}>
+                    <Icon name="share" />
                     Share…
                   </Button>
                 )}
