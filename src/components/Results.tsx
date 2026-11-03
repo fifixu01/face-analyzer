@@ -37,7 +37,7 @@ const GROUP_COLORS: Record<string, string> = {
 };
 
 export function Results({ result, onRetake }: { result: StillResult; onRetake: () => void }) {
-  const { metrics: m, issues, expressions } = result;
+  const { metrics: m, issues } = result;
   const shape = faceShape(m);
   const [sharing, setSharing] = useState(false);
 
@@ -60,7 +60,6 @@ export function Results({ result, onRetake }: { result: StillResult; onRetake: (
       <Hero
         result={result}
         shape={shape}
-        expressions={expressions}
         onShare={() => setSharing(true)}
         onRetake={onRetake}
       />
@@ -93,13 +92,11 @@ export function Results({ result, onRetake }: { result: StillResult; onRetake: (
 function Hero({
   result,
   shape,
-  expressions,
   onShare,
   onRetake,
 }: {
   result: StillResult;
   shape: Shape;
-  expressions: string[];
   onShare: () => void;
   onRetake: () => void;
 }) {
@@ -149,7 +146,6 @@ function Hero({
         </div>
 
         <p className="text-[15px] leading-relaxed text-ink">{summaryText(m, shape)}</p>
-        {expressions.length > 0 && <p className="-mt-2 text-[13px] text-muted">Expression detected: {expressions.join(', ')}</p>}
 
         <div className="mt-auto flex flex-wrap gap-2.5 pt-1">
           <Button variant="primary" className="flex-1 py-3 min-[480px]:flex-none min-[480px]:px-5" onClick={onShare}>
