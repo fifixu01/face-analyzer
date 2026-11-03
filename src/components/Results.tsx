@@ -248,47 +248,55 @@ function ResultPhoto({ result }: { result: StillResult }) {
 /* ---------- Cards ---------- */
 
 function ShapeCard({ shape, m }: { shape: Shape; m: Metrics }) {
-  const byName = Object.fromEntries(shape.matches.map((x) => [x.name, x.share]));
+  const top = shape.matches.slice(0, 3);
   return (
     <Card title="Face shape">
       <p className="text-[15px] text-ink">{SHAPE_NOTES[shape.best as keyof typeof SHAPE_NOTES]}</p>
-      <div className="grid grid-cols-3 gap-2">
-        {Object.keys(SHAPE_PATHS).map((name, i) => {
-          const share = byName[name] ?? 0;
-          const best = name === shape.best;
-          return (
+      <div className="flex items-center gap-4 rounded-2xl bg-sage-soft px-4 py-3.5">
+        <svg viewBox="0 0 40 52" className="h-14 w-11 flex-none" aria-hidden>
+          <path d={SHAPE_PATHS[shape.best]} fill="none" stroke="var(--color-sage)" strokeWidth="2" />
+        </svg>
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-3xl leading-none font-semibold text-ink-strong">{shape.best}</p>
+          <p className="mt-1 text-sm text-muted">your face shape</p>
+        </div>
+        <span className="tabular font-display text-2xl font-semibold text-sage">{Math.round(top[0].share * 100)}%</span>
+      </div>
+
+      {top[0].share < 0.995 && (
+        <div className="flex flex-col gap-1">
+          <p className="mb-1 text-xs font-bold tracking-[0.06em] text-muted uppercase">Top matches</p>
+          {top.map(({ name, share }, i) => (
             <motion.div
               key={name}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
-              className={`flex flex-col items-center gap-1.5 rounded-2xl border px-2 pt-3 pb-2.5 ${
-                best ? 'border-sage/40 bg-sage-soft' : 'border-transparent bg-raised'
-              }`}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 + i * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
+              className="grid grid-cols-[22px_72px_1fr_40px] items-center gap-3 py-1.5 text-sm"
             >
-              <svg viewBox="0 0 40 52" className="h-9 w-7" aria-hidden>
+              <svg viewBox="0 0 40 52" className="h-6 w-[18px]" aria-hidden>
                 <path
                   d={SHAPE_PATHS[name]}
-                  fill={best ? 'rgba(147,173,156,0.18)' : 'none'}
-                  stroke={best ? 'var(--color-sage)' : 'var(--color-faint)'}
-                  strokeWidth="2.2"
+                  fill="none"
+                  stroke={i === 0 ? 'var(--color-sage)' : 'var(--color-faint)'}
+                  strokeWidth="2.6"
                 />
               </svg>
-              <span className={`text-[13px] font-semibold ${best ? 'text-ink-strong' : 'text-muted'}`}>{name}</span>
-              <div className="h-1 w-full overflow-hidden rounded-full bg-meter">
+              <span className={`font-semibold ${i === 0 ? 'text-ink-strong' : 'text-muted'}`}>{name}</span>
+              <div className="h-1.5 overflow-hidden rounded-full bg-meter">
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: best ? 'var(--color-sage)' : 'var(--color-faint)' }}
+                  style={{ background: i === 0 ? 'var(--color-sage)' : 'var(--color-faint)' }}
                   initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(3, share * 100)}%` }}
-                  transition={{ delay: 0.4 + i * 0.05, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                  animate={{ width: `${Math.max(2, share * 100)}%` }}
+                  transition={{ delay: 0.35 + i * 0.07, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                 />
               </div>
-              <span className="tabular text-xs text-muted">{Math.round(share * 100)}%</span>
+              <span className="tabular text-right text-muted">{Math.round(share * 100)}%</span>
             </motion.div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
       <Expandable headerClassName="pt-1" header={<span className="text-sm font-semibold text-muted">How it’s measured</span>}>
         <Explain>
           Your face’s width is measured at 19 heights down the outline (the dots on your photo), then compared with each

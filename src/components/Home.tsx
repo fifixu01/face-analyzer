@@ -45,7 +45,6 @@ export function Home({ onStart }: { onStart: () => void }) {
 
       <motion.div variants={rise} className="relative grid h-[270px] w-[270px] place-items-center">
         {/* Halo + orbiting dots */}
-        <div className="absolute h-[210px] w-[210px] rounded-full bg-surface" />
         <div className="absolute h-[256px] w-[256px] rounded-full border border-dashed border-line/50" />
         {ORBIT.map((o, i) => (
           <motion.div
