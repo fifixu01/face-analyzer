@@ -41,14 +41,14 @@ export default function App() {
   }
 
   return (
-    <main className="mx-auto max-w-[1080px] px-5 pt-10 pb-20">
+    <main className="mx-auto max-w-[1080px] px-[max(1.25rem,env(safe-area-inset-left))] pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(3rem,env(safe-area-inset-bottom))] min-[820px]:pt-10 min-[820px]:pb-20">
       <AnimatePresence>
         {view !== 'home' && (
           <motion.header
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-6 flex flex-wrap items-center justify-between gap-4"
+            className="mb-4 flex flex-wrap items-center justify-between gap-4 min-[820px]:mb-6"
           >
             <motion.button
               onClick={goHome}
@@ -59,7 +59,7 @@ export default function App() {
             >
               Face Analyzer
             </motion.button>
-            <p className="text-[13px] text-muted">Nothing leaves your device</p>
+            <p className="hidden text-[13px] text-muted sm:block">Nothing leaves your device</p>
           </motion.header>
         )}
       </AnimatePresence>

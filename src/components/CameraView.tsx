@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { getLandmarker } from '../lib/landmarker.js';
 import { runChecks, measureLighting } from '../lib/quality.js';
 import { drawMesh } from '../lib/draw.js';
-import { Button, Toggle } from './ui';
+import { Button, Expandable, Toggle } from './ui';
 
 const HOLD_MS = 3000; // how long everything must stay green before auto-capture
 const LIGHT_EVERY_MS = 250;
@@ -60,8 +60,14 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
 
     (async () => {
       try {
+        // Phones held upright get a portrait (3:4) stream so the face fills the preview.
+        const portrait = window.matchMedia('(orientation: portrait)').matches;
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+          video: {
+            facingMode: 'user',
+            width: { ideal: portrait ? 720 : 1280 },
+            height: { ideal: portrait ? 960 : 720 },
+          },
           audio: false,
         });
       } catch (e) {
@@ -82,6 +88,7 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
       }
       const v = videoRef.current!;
       v.srcObject = stream;
+      v.muted = true; // iOS Safari needs the property set, not just the attribute
       await v.play().catch(() => {});
       const landmarker = await getLandmarker('VIDEO');
       if (cancelled) return;
@@ -116,6 +123,7 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
         sctx.scale(-1, 1);
         sctx.drawImage(v, 0, 0);
         stream.getTracks().forEach((t) => t.stop());
+        navigator.vibrate?.(40); // Android haptic tick; ignored elsewhere
         setFlash(true);
         setTimeout(() => onCaptureRef.current(still), 220);
       };
@@ -124,7 +132,7 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
         if (cancelled || capturing) return;
         if (v.readyState >= 2 && v.currentTime !== lastVideoTime) {
           lastVideoTime = v.currentTime;
-          if (canvas.width !== v.videoWidth) {
+          if (canvas.width !== v.videoWidth || canvas.height !== v.videoHeight) {
             canvas.width = v.videoWidth;
             canvas.height = v.videoHeight;
           }
@@ -206,10 +214,21 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
   const live = cam.state === 'live';
 
   return (
-    <div className="grid items-start gap-5 min-[820px]:grid-cols-[minmax(0,1fr)_290px]">
-      <div className={`relative overflow-hidden rounded-2xl border border-line bg-frame ${live ? '' : 'aspect-[16/10]'}`}>
-        <video ref={videoRef} playsInline muted className={`block w-full -scale-x-100 ${live ? '' : 'hidden'}`} />
-        <canvas ref={overlayRef} className="absolute inset-0 h-full w-full -scale-x-100" />
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 min-[820px]:grid-cols-[minmax(0,1fr)_290px] min-[820px]:gap-5">
+      {/* Phones: a tall, fixed-height preview (video is cropped to fill it). Desktop: the video's natural size. */}
+      <div
+        className={`relative h-[min(62svh,calc((100vw-2.5rem)*4/3))] overflow-hidden rounded-2xl border border-line bg-frame min-[820px]:h-auto ${
+          live ? '' : 'min-[820px]:aspect-[16/10]'
+        }`}
+      >
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          autoPlay
+          className={`absolute inset-0 h-full w-full -scale-x-100 object-cover min-[820px]:static min-[820px]:h-auto ${live ? '' : 'hidden'}`}
+        />
+        <canvas ref={overlayRef} className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
 
         {live && <FaceGuide good={guide.good} text={guide.text} holdBarRef={holdBarRef} />}
 
@@ -245,6 +264,14 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
       </div>
 
       <Checklist
+        checks={checks}
+        notice={notice}
+        auto={auto}
+        setAuto={setAuto}
+        canCapture={live && faceFound}
+        onCapture={() => captureRef.current()}
+      />
+      <MobileControls
         checks={checks}
         notice={notice}
         auto={auto}
@@ -289,6 +316,78 @@ function FaceGuide({ good, text, holdBarRef }: { good: boolean; text: string; ho
   );
 }
 
+type ControlsProps = {
+  checks: Check[] | null;
+  notice?: string | null;
+  auto: boolean;
+  setAuto: (v: boolean) => void;
+  canCapture: boolean;
+  onCapture: () => void;
+};
+
+/** Phones: progress dots + capture button right under the preview; full list one tap away. */
+function MobileControls({ checks, notice, auto, setAuto, canCapture, onCapture }: ControlsProps) {
+  const total = checks && checks.length > 1 ? checks.length : IDLE_CHECKS.length;
+  const done = checks ? checks.filter((c) => c.ok).length : 0;
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 min-[820px]:hidden">
+      {notice && <p className="rounded-lg bg-ochre-soft px-3 py-2 text-[13px] text-ochre">{notice}</p>}
+      <Expandable
+        header={
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold">
+              {done} of {total} ready
+            </span>
+            <span className="flex gap-1">
+              {Array.from({ length: total }, (_, i) => (
+                <motion.span
+                  key={i}
+                  animate={{ scale: i < done ? 1 : 0.75, backgroundColor: i < done ? '#8fa898' : '#302e2b' }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                  className="h-2 w-2 rounded-full"
+                />
+              ))}
+            </span>
+          </div>
+        }
+      >
+        <div className="pt-3">
+          <CheckList checks={checks} />
+        </div>
+      </Expandable>
+      <div className="flex items-center gap-3 border-t border-line pt-3">
+        <Toggle checked={auto} onChange={setAuto} label="Auto" />
+        <Button variant="primary" className="flex-1 py-3 text-base" disabled={!canCapture} onClick={onCapture}>
+          Capture
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function CheckList({ checks }: { checks: Check[] | null }) {
+  const items = checks ?? IDLE_CHECKS.map((label) => ({ id: label, label, ok: false, fix: label, idle: true }));
+  return (
+    <ul className="flex flex-col gap-2.5 text-sm">
+      {items.map((c) => {
+        const idle = 'idle' in c;
+        return (
+          <motion.li layout key={c.id} className={`flex items-center gap-2.5 ${idle ? 'text-muted' : c.ok ? 'text-ink' : 'text-ochre'}`}>
+            <motion.span
+              key={`${c.id}-${c.ok}`}
+              initial={{ scale: 0.4 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 600, damping: 15 }}
+              className={`h-2 w-2 flex-none rounded-full ${idle ? 'border-[1.5px] border-line' : c.ok ? 'bg-sage' : 'border-[1.5px] border-ochre'}`}
+            />
+            {c.ok || idle ? c.label : c.fix}
+          </motion.li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function Checklist({
   checks,
   notice,
@@ -304,29 +403,14 @@ function Checklist({
   canCapture: boolean;
   onCapture: () => void;
 }) {
-  const items = checks ?? IDLE_CHECKS.map((label) => ({ id: label, label, ok: false, fix: label, idle: true }));
   return (
-    <aside className="flex flex-col gap-3.5 rounded-2xl border border-line bg-surface p-5">
+    <aside className="hidden flex-col gap-3.5 rounded-2xl border border-line bg-surface p-5 min-[820px]:flex">
       <p className="text-[13px] font-bold tracking-[0.05em] text-muted uppercase">Before capture</p>
       <p className="text-[13px] text-muted">The photo is taken once every item is checked.</p>
       {notice && <p className="rounded-lg bg-ochre-soft px-3 py-2 text-[13px] text-ochre">{notice}</p>}
-      <ul className="my-1 flex flex-col gap-2.5 text-sm">
-        {items.map((c) => {
-          const idle = 'idle' in c;
-          return (
-            <motion.li layout key={c.id} className={`flex items-center gap-2.5 ${idle ? 'text-muted' : c.ok ? 'text-ink' : 'text-ochre'}`}>
-              <motion.span
-                key={`${c.id}-${c.ok}`}
-                initial={{ scale: 0.4 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 600, damping: 15 }}
-                className={`h-2 w-2 flex-none rounded-full ${idle ? 'border-[1.5px] border-line' : c.ok ? 'bg-sage' : 'border-[1.5px] border-ochre'}`}
-              />
-              {c.ok || idle ? c.label : c.fix}
-            </motion.li>
-          );
-        })}
-      </ul>
+      <div className="my-1">
+        <CheckList checks={checks} />
+      </div>
       <div className="flex flex-col gap-3 border-t border-line pt-3.5">
         <Toggle checked={auto} onChange={setAuto} label="Capture automatically" />
         <Button variant="primary" disabled={!canCapture} onClick={onCapture}>

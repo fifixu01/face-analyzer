@@ -13,7 +13,7 @@ export function Home({ onStart }: { onStart: () => void }) {
       variants={container}
       initial="hidden"
       animate="show"
-      className="relative flex min-h-[calc(100vh-120px)] flex-col items-center justify-center gap-[18px] py-5 text-center"
+      className="relative flex min-h-[calc(100svh-6rem)] flex-col items-center justify-center gap-[18px] py-5 text-center"
     >
       {/* Soft drifting glow behind everything */}
       <motion.div

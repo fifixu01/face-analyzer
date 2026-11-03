@@ -72,7 +72,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 backdrop-blur-sm min-[720px]:items-center min-[720px]:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -83,21 +83,22 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
             aria-modal="true"
             aria-label="Share your results"
             onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
-            className="grid max-h-[92vh] w-full max-w-[860px] gap-6 overflow-y-auto rounded-3xl border border-line bg-surface p-6 min-[720px]:grid-cols-[minmax(0,1fr)_260px]"
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 60 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            // Phones: a bottom sheet. Wider screens: a centered dialog with the preview beside the controls.
+            className="grid max-h-[92svh] w-full max-w-[860px] grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto rounded-t-3xl border border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] min-[720px]:grid-cols-[minmax(0,1fr)_260px] min-[720px]:gap-6 min-[720px]:rounded-3xl min-[720px]:p-6"
           >
             {/* Preview */}
-            <div className="flex items-start justify-center rounded-2xl bg-frame p-4">
+            <div className="order-2 flex items-start justify-center rounded-2xl bg-frame p-3 min-[720px]:order-none min-[720px]:p-4">
               <AnimatePresence mode="popLayout" initial={false}>
                 {preview ? (
                   <motion.img
                     key={preview.id}
                     src={preview.url}
                     alt={`Results card in the ${theme.name} style`}
-                    className="max-h-[72vh] w-auto max-w-full rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
+                    className="max-h-[44svh] w-auto max-w-full rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.35)] min-[720px]:max-h-[72vh]"
                     initial={{ opacity: 0, scale: 0.94, rotate: -2 }}
                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
                     exit={{ opacity: 0, scale: 0.96, rotate: 2 }}
@@ -110,20 +111,22 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
             </div>
 
             {/* Controls */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start justify-between gap-2">
+            <div className="contents min-[720px]:flex min-[720px]:flex-col min-[720px]:gap-4">
+              {/* Grab handle on the phone sheet */}
+              <div className="order-0 mx-auto -mb-1 h-1 w-10 rounded-full bg-line min-[720px]:hidden" />
+              <div className="order-1 flex items-start justify-between gap-2 min-[720px]:order-none">
                 <div>
                   <p className="font-display text-2xl font-semibold text-ink-strong">Share results</p>
                   <p className="text-[13px] text-muted">Pick a style. Your photo isn’t included.</p>
                 </div>
-                <button onClick={onClose} aria-label="Close" className="cursor-pointer rounded-full p-1.5 text-muted hover:text-ink">
+                <button onClick={onClose} aria-label="Close" className="-m-1 cursor-pointer rounded-full p-2.5 text-muted hover:text-ink">
                   <svg viewBox="0 0 12 12" className="h-3.5 w-3.5" aria-hidden>
                     <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                   </svg>
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="order-3 grid grid-cols-4 gap-2 min-[720px]:order-none min-[720px]:grid-cols-2 min-[720px]:gap-2.5">
                 {THEMES.map((t) => {
                   const active = t.id === themeId;
                   return (
@@ -132,7 +135,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                       onClick={() => setThemeId(t.id)}
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      className="relative flex cursor-pointer flex-col gap-2 rounded-xl border border-line bg-raised p-3 text-left"
+                      className="relative flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-line bg-raised p-2 text-center min-[720px]:items-start min-[720px]:gap-2 min-[720px]:p-3 min-[720px]:text-left"
                     >
                       {active && (
                         <motion.span
@@ -145,12 +148,12 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                         {t.swatch.map((c, i) => (
                           <span
                             key={c}
-                            className="h-6 w-6 rounded-full border-2 border-raised"
-                            style={{ background: c, marginLeft: i ? -8 : 0 }}
+                            className="h-5 w-5 rounded-full border-2 border-raised min-[720px]:h-6 min-[720px]:w-6"
+                            style={{ background: c, marginLeft: i ? -7 : 0 }}
                           />
                         ))}
                       </span>
-                      <span className="text-[13px] font-semibold" style={{ fontFamily: `"${t.titleFont[1]}"` }}>
+                      <span className="text-[11px] leading-tight font-semibold min-[720px]:text-[13px]" style={{ fontFamily: `"${t.titleFont[1]}"` }}>
                         {t.name}
                       </span>
                     </motion.button>
@@ -158,8 +161,8 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                 })}
               </div>
 
-              <div className="mt-auto flex flex-col gap-2.5">
-                <Button variant="primary" onClick={save} disabled={!preview}>
+              <div className="order-4 mt-auto flex gap-2.5 min-[720px]:order-none min-[720px]:flex-col">
+                <Button variant="primary" className="flex-1 py-3 min-[720px]:flex-none min-[720px]:py-2.5" onClick={save} disabled={!preview}>
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.span
                       key={saved ? 'saved' : 'save'}
@@ -173,7 +176,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                   </AnimatePresence>
                 </Button>
                 {canShareFiles && (
-                  <Button onClick={share} disabled={!preview}>
+                  <Button className="flex-1 py-3 min-[720px]:flex-none min-[720px]:py-2.5" onClick={share} disabled={!preview}>
                     Share…
                   </Button>
                 )}

@@ -25,7 +25,7 @@ export function Results({ result, onRetake }: { result: StillResult; onRetake: (
       variants={stagger}
       initial="hidden"
       animate="show"
-      className="grid items-start gap-8 min-[820px]:grid-cols-2"
+      className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 min-[820px]:grid-cols-2"
     >
       {/* Left: photo + summary */}
       <div className="flex flex-col gap-4">

@@ -30,7 +30,7 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex cursor-pointer items-center gap-2.5 text-[13px] text-muted"
+      className="-my-2 flex cursor-pointer items-center gap-2.5 py-2 text-[13px] text-muted"
     >
       <span className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${checked ? 'justify-end bg-sage' : 'justify-start bg-meter'}`}>
         <motion.span layout transition={spring} className="h-4 w-4 rounded-full bg-ink-strong shadow" />

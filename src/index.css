@@ -34,6 +34,8 @@ html {
 
 body {
   @apply bg-bg font-sans text-ink antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
   font-size: 15px;
   line-height: 1.55;
 }
