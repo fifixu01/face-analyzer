@@ -8,6 +8,7 @@ const FEATURE_COLORS = {
   lips: 'rgba(222, 134, 122, 0.95)',  // coral
 };
 import { IDX } from './analyze.js';
+import { outlineGuides } from './outline.js';
 
 // ~60 landmarks for a low-poly wireframe across the face (visual only).
 const SPARSE_POINTS = [
@@ -102,38 +103,64 @@ export function drawMesh(ctx, landmarks, w, h) {
 
 const MEASURE_LINES = [
   { from: 'top', to: IDX.chin, color: '#a9c46a' },
-  { from: IDX.foreheadL, to: IDX.foreheadR, color: '#7fa3d6' },
-  { from: IDX.cheekL, to: IDX.cheekR, color: '#b296d6' },
-  { from: IDX.jawL, to: IDX.jawR, color: '#d98fb8' },
   { from: IDX.eyeInnerL, to: IDX.eyeInnerR, color: '#d3cec6' },
 ];
 
+// Width lines come from the outline profile (see outline.js), so they match what the face shape uses.
+const OUTLINE_COLORS = {
+  forehead: '#7fa3d6',
+  cheekbones: '#b296d6',
+  jaw: '#d98fb8',
+  chin: '#e3a76f',
+};
+
 export const LEGEND = [
   ['#a9c46a', 'Face length'],
-  ['#7fa3d6', 'Forehead width'],
-  ['#b296d6', 'Cheekbone width'],
-  ['#d98fb8', 'Jaw width'],
+  [OUTLINE_COLORS.forehead, 'Forehead'],
+  [OUTLINE_COLORS.cheekbones, 'Widest point'],
+  [OUTLINE_COLORS.jaw, 'Jaw'],
+  [OUTLINE_COLORS.chin, 'Chin'],
   ['#d3cec6', 'Eye gap'],
 ];
+
+function segment(ctx, a, b, lw) {
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  for (const p of [a, b]) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, lw * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
 export function drawMeasurements(ctx, landmarks, w, h) {
   const topI = landmarks.length > IDX.hairline ? IDX.hairline : IDX.top;
   const lw = Math.max(1.5, w / 550);
   ctx.lineWidth = lw;
+
+  // The outline points the shape is measured from.
+  const guides = outlineGuides(landmarks, w, h);
+  if (guides) {
+    ctx.fillStyle = 'rgba(230, 225, 217, 0.75)';
+    for (const p of guides.samples) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, lw * 0.9, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (const [name, line] of Object.entries(guides.lines)) {
+      if (!line) continue;
+      ctx.strokeStyle = ctx.fillStyle = OUTLINE_COLORS[name];
+      segment(ctx, line[0], line[1], lw);
+    }
+  }
+
   for (const { from, to, color } of MEASURE_LINES) {
     const a = landmarks[from === 'top' ? topI : from];
     const b = landmarks[to];
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(a.x * w, a.y * h);
-    ctx.lineTo(b.x * w, b.y * h);
-    ctx.stroke();
-    for (const p of [a, b]) {
-      ctx.beginPath();
-      ctx.arc(p.x * w, p.y * h, lw * 1.6, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    ctx.strokeStyle = ctx.fillStyle = color;
+    segment(ctx, { x: a.x * w, y: a.y * h }, { x: b.x * w, y: b.y * h }, lw);
   }
   // Facial-thirds guide lines.
   ctx.setLineDash([lw * 3, lw * 3]);

@@ -1,6 +1,7 @@
 // Dev-only: sample results for previewing the results screen without a camera.
 // Open http://localhost:5173/?demo while running `npm run dev`.
 import type { StillResult } from '../components/Results';
+import { SIDE_A, SIDE_B } from '../lib/outline.js';
 
 export function makeDemoResult(): StillResult {
   const still = Object.assign(document.createElement('canvas'), { width: 1280, height: 720 });
@@ -18,9 +19,16 @@ export function makeDemoResult(): StillResult {
   // Rough face-like landmark layout so the measurement lines land somewhere sensible.
   const landmarks = Array.from({ length: 478 }, () => ({ x: 0.5, y: 0.5, z: 0 }));
   const set = (i: number, x: number, y: number) => (landmarks[i] = { x: x / 1280, y: y / 720, z: 0 });
-  set(10, 640, 150); set(152, 640, 585); set(9, 640, 265); set(2, 640, 410);
-  set(234, 475, 330); set(454, 805, 330); set(172, 510, 480); set(397, 770, 480);
-  set(54, 525, 195); set(284, 755, 195); set(133, 600, 300); set(362, 680, 300);
+  set(9, 640, 265); set(2, 640, 410); set(133, 600, 300); set(362, 680, 300);
+  set(33, 560, 300); set(263, 720, 300);
+  // Face outline: an egg shape that narrows toward the chin.
+  [SIDE_A, SIDE_B].forEach((side, s) =>
+    side.forEach((idx, i) => {
+      const a = -Math.PI / 2 + (Math.PI * i) / (side.length - 1);
+      const taper = Math.sin(a) > 0 ? 1 - 0.3 * Math.sin(a) ** 2 : 1 - 0.12 * Math.sin(a) ** 2;
+      set(idx, 640 + (s ? -1 : 1) * 168 * Math.cos(a) * taper, 368 + 218 * Math.sin(a));
+    }),
+  );
 
   return {
     still,
@@ -29,7 +37,8 @@ export function makeDemoResult(): StillResult {
     expressions: [],
     metrics: {
       symmetry: 88, symEyes: 93, symBrows: 86, symNose: 90, symMouth: 81, symJaw: 87,
-      hairlineFound: 1, lengthToWidth: 1.41, jawToCheek: 0.8, foreheadToCheek: 0.86, foreheadToJaw: 1.07,
+      hairlineFound: 1,
+      outlineLength: 1.11, outlineForehead: 0.8, outlineMidface: 0.87, outlineJaw: 0.73, outlineChin: 0.41, outlineWidestAt: 0.45,
       thirdUpper: 0.31, thirdMiddle: 0.32, thirdLower: 0.37,
       eyeSpacing: 1.16, noseToEyeGap: 0.95, mouthToNose: 1.52, lipRatio: 1.35,
       canthalTilt: 7.2, eyeAspect: 0.26, eyeSize: 0.215, browHeight: 0.52,

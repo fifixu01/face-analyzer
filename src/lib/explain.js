@@ -177,20 +177,20 @@ export const FEATURE_GROUPS = [
   {
     title: 'Face outline',
     items: [
-      item('Forehead width', 'foreheadToCheek', {
+      item('Forehead width', 'outlineForehead', {
         format: pct,
-        measures: 'Forehead width as a share of cheekbone width.',
-        low: 0.75, high: 0.9,
+        measures: 'Forehead width as a share of the widest part of your face.',
+        low: 0.77, high: 0.83,
         text: (v) => ({
           low: ['Narrow', `Your forehead is about ${pct(v)} as wide as your cheekbones, so the cheekbones are clearly the widest point. Typical of diamond shapes.`],
           mid: ['Balanced', `Your forehead is about ${pct(v)} as wide as your cheekbones, a common, balanced relationship.`],
           high: ['Broad', `Your forehead is about ${pct(v)} as wide as your cheekbones, nearly matching them. Typical of heart and square shapes.`],
         }),
       }),
-      item('Jaw width', 'jawToCheek', {
+      item('Jaw width', 'outlineJaw', {
         format: pct,
-        measures: 'Jaw width as a share of cheekbone width.',
-        low: 0.78, high: 0.88,
+        measures: 'Jaw width as a share of the widest part of your face.',
+        low: 0.71, high: 0.77,
         text: (v) => ({
           low: ['Tapered', `Your jaw is about ${pct(v)} as wide as your cheekbones, so the face narrows noticeably toward the chin. Typical of heart and diamond shapes.`],
           mid: ['Moderate', `Your jaw is about ${pct(v)} as wide as your cheekbones, a gentle taper. Typical of oval faces.`],

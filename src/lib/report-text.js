@@ -18,7 +18,9 @@ export function summaryText(m, shape) {
   const spread = Math.max(...Object.values(thirds)) - Math.min(...Object.values(thirds));
 
   return [
-    `Your face reads as ${shape.best.toLowerCase()}, with some ${shape.runnerUp.toLowerCase()} traits.`,
+    shape.matches[1].share < 0.15
+      ? `Your face reads clearly as ${shape.best.toLowerCase()}.`
+      : `Your face reads as ${shape.best.toLowerCase()}, with some ${shape.runnerUp.toLowerCase()} traits.`,
     `The most symmetric area is your ${sorted[0][0]}, and the least is your ${sorted.at(-1)[0]}.`,
     spread < 0.06 ? 'Your facial thirds are evenly balanced.' : `Your ${longest} third is the longest of the three.`,
   ].join(' ');

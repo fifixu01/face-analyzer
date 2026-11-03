@@ -1,3 +1,7 @@
+import { outlineMetrics } from './outline.js';
+
+export { faceShape } from './outline.js';
+
 // Geometry on MediaPipe's 478-point face mesh.
 // Index map: https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model_uv_visualization.png
 
@@ -93,8 +97,6 @@ export function computeMetrics(landmarks, width, height) {
   const topI = hairlineFound ? IDX.hairline : IDX.top;
   const faceLength = d(topI, IDX.chin);
   const cheekWidth = d(IDX.cheekL, IDX.cheekR);
-  const jawWidth = d(IDX.jawL, IDX.jawR);
-  const foreheadWidth = d(IDX.foreheadL, IDX.foreheadR);
 
   const upper = level[IDX.glabella].y - level[topI].y;
   const middle = level[IDX.subnasale].y - level[IDX.glabella].y;
@@ -140,10 +142,7 @@ export function computeMetrics(landmarks, width, height) {
     symMouth: sym.regions.Mouth,
     symJaw: sym.regions.Jaw,
     hairlineFound: hairlineFound ? 1 : 0,
-    lengthToWidth: faceLength / cheekWidth,
-    jawToCheek: jawWidth / cheekWidth,
-    foreheadToCheek: foreheadWidth / cheekWidth,
-    foreheadToJaw: foreheadWidth / jawWidth,
+    ...outlineMetrics(landmarks, width, height),
     thirdUpper: upper / thirds,
     thirdMiddle: middle / thirds,
     thirdLower: lower / thirds,
@@ -165,25 +164,6 @@ export function computeMetrics(landmarks, width, height) {
     yaw: yawRatio(level),
     roll: rollDeg,
   };
-}
-
-/**
- * Heuristic face-shape classifier. Thresholds are a starting point; tune them on real photos.
- */
-export function faceShape(m) {
-  // Thresholds assume hairline-to-chin length. Without a detected hairline the mesh top sits
-  // lower, so scale up by a rough average correction.
-  const L = m.hairlineFound ? m.lengthToWidth : m.lengthToWidth * 1.1;
-  const s = {
-    Oval: 1 - Math.abs(L - 1.43) * 3 - Math.abs(m.jawToCheek - 0.8) * 3,
-    Round: 1 - Math.abs(L - 1.21) * 3 - Math.abs(m.jawToCheek - 0.82) * 3,
-    Square: 1 - Math.abs(L - 1.23) * 3 - Math.abs(m.jawToCheek - 0.92) * 4,
-    Oblong: 1 - Math.abs(L - 1.65) * 3 - Math.abs(m.jawToCheek - 0.85) * 2,
-    Heart: 1 - Math.abs(m.foreheadToJaw - 1.2) * 3 - Math.abs(m.jawToCheek - 0.72) * 3,
-    Diamond: 1 - Math.abs(m.foreheadToCheek - 0.72) * 4 - Math.abs(m.jawToCheek - 0.72) * 3,
-  };
-  const ranked = Object.entries(s).sort((a, b) => b[1] - a[1]);
-  return { best: ranked[0][0], runnerUp: ranked[1][0] };
 }
 
 export function topExpressions(blendshapes) {

@@ -58,10 +58,20 @@ export function Results({ result, onRetake }: { result: StillResult; onRetake: (
       <div className="flex flex-col gap-5">
         <Block title="Face shape" first>
           <p>{SHAPE_NOTES[shape.best as keyof typeof SHAPE_NOTES]}</p>
-          <dl className="grid grid-cols-2 gap-2">
-            <Fact label="Length to width" value={m.lengthToWidth.toFixed(2)} />
-            <Fact label="Second closest" value={shape.runnerUp} />
-          </dl>
+          <ShapeMatches matches={shape.matches} />
+          <Expandable headerClassName="py-1" header={<span className="text-sm text-muted">How it's measured</span>}>
+            <Explain>
+              Your face's width is measured at 19 heights down the outline (the dots on your photo), then that
+              profile is compared with each shape: how long the face is for its width, and how the forehead, jaw
+              and chin compare with the widest point.
+            </Explain>
+            <dl className="mb-2 grid grid-cols-2 gap-x-2 gap-y-3 min-[480px]:grid-cols-4">
+              <Fact label="Length to width" value={m.outlineLength.toFixed(2)} />
+              <Fact label="Forehead" value={pct(m.outlineForehead)} />
+              <Fact label="Jaw" value={pct(m.outlineJaw)} />
+              <Fact label="Chin" value={pct(m.outlineChin)} />
+            </dl>
+          </Expandable>
         </Block>
 
         <Block title="Symmetry by region">
@@ -181,6 +191,23 @@ function Hero({ shape, symmetry }: { shape: string; symmetry: number }) {
           <span className="ml-0.5 text-base text-muted">/100</span>
         </p>
       </div>
+    </div>
+  );
+}
+
+function ShapeMatches({ matches }: { matches: { name: string; share: number }[] }) {
+  return (
+    <div className="flex flex-col gap-2 py-1">
+      {matches.map(({ name, share }, i) => (
+        <div
+          key={name}
+          className={`grid grid-cols-[64px_1fr_36px] items-center gap-3 text-sm ${i === 0 ? 'text-ink-strong' : 'text-muted'}`}
+        >
+          <span className={i === 0 ? 'font-semibold' : ''}>{name}</span>
+          <Meter value={share * 100} delay={0.3 + i * 0.06} />
+          <span className="tabular text-right">{Math.round(share * 100)}%</span>
+        </div>
+      ))}
     </div>
   );
 }

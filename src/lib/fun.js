@@ -7,8 +7,8 @@ const FEATURES = {
   tilt: { key: 'canthalTilt', mean: 4, spread: 4, high: 'upturned outer eye corners', low: 'level or softly angled eye corners' },
   round: { key: 'eyeAspect', mean: 0.3, spread: 0.05, high: 'round, open eyes', low: 'almond-shaped eyes' },
   eyes: { key: 'eyeSize', mean: 0.21, spread: 0.02, high: 'large eyes for your face', low: 'smaller, refined eyes' },
-  jaw: { key: 'jawToCheek', mean: 0.83, spread: 0.06, high: 'a broad, soft jaw', low: 'a tapered jaw and chin' },
-  long: { key: 'lengthToWidth', mean: 1.4, spread: 0.1, high: 'a longer face', low: 'a shorter, rounder face' },
+  jaw: { key: 'outlineJaw', mean: 0.74, spread: 0.04, high: 'a broad, soft jaw', low: 'a tapered jaw and chin' },
+  long: { key: 'outlineLength', mean: 1.08, spread: 0.06, high: 'a longer face', low: 'a shorter, rounder face' },
   lower: { key: 'thirdLower', mean: 0.34, spread: 0.03, high: 'a longer lower face', low: 'a compact lower face' },
   mouth: { key: 'mouthToNose', mean: 1.5, spread: 0.15, high: 'a wide mouth', low: 'a small mouth' },
 };
