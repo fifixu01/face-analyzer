@@ -49,7 +49,7 @@ export default function App() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="sticky top-0 z-30 border-b border-line/60 bg-bg/75 pt-[env(safe-area-inset-top)] backdrop-blur-xl"
+            className="sticky top-0 z-30 border-b border-line bg-bg pt-[env(safe-area-inset-top)]"
           >
             <div className="mx-auto flex h-14 max-w-[1080px] items-center justify-between gap-4 px-[max(1.25rem,env(safe-area-inset-left))] min-[820px]:h-16">
               <motion.button
@@ -62,7 +62,7 @@ export default function App() {
                 <LogoMark />
                 Face Analyzer
               </motion.button>
-              <p className="flex items-center gap-1.5 rounded-full border border-line bg-surface/70 px-3 py-1 text-xs font-semibold text-muted">
+              <p className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-semibold text-muted">
                 <Icon name="lock" className="h-3.5 w-3.5 text-sage" />
                 <span className="hidden min-[400px]:inline">Stays on your device</span>
                 <span className="min-[400px]:hidden">Private</span>
@@ -145,7 +145,7 @@ function Analyzing() {
 /** Tiny face mark for the header. */
 function LogoMark() {
   return (
-    <span className="grid h-8 w-8 place-items-center rounded-[10px] border border-line bg-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-surface">
       <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none" strokeLinecap="round">
         <ellipse cx="12" cy="12.5" rx="7.5" ry="9.5" stroke="rgba(214,209,201,0.6)" strokeWidth="1.5" />
         <path d="M8.2 10.6q1.3-.9 2.6 0M13.2 10.6q1.3-.9 2.6 0" stroke="var(--color-teal)" strokeWidth="1.6" />

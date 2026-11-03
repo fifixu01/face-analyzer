@@ -37,7 +37,7 @@ export function Home({ onStart }: { onStart: () => void }) {
 
       <motion.p
         variants={rise}
-        className="flex items-center gap-2 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-xs font-semibold text-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] backdrop-blur"
+        className="flex items-center gap-2 rounded-full bg-surface px-3.5 py-1.5 text-xs font-semibold text-muted"
       >
         <Icon name="lock" className="h-3.5 w-3.5 text-sage" />
         Private · Fifi will not steal ur pics dont worry
@@ -45,7 +45,7 @@ export function Home({ onStart }: { onStart: () => void }) {
 
       <motion.div variants={rise} className="relative grid h-[270px] w-[270px] place-items-center">
         {/* Halo + orbiting dots */}
-        <div className="absolute h-[210px] w-[210px] rounded-full border border-line/70 bg-surface/30" />
+        <div className="absolute h-[210px] w-[210px] rounded-full bg-surface" />
         <div className="absolute h-[256px] w-[256px] rounded-full border border-dashed border-line/50" />
         {ORBIT.map((o, i) => (
           <motion.div
@@ -70,7 +70,7 @@ export function Home({ onStart }: { onStart: () => void }) {
           hidden: { opacity: 0, y: 24, scale: 0.92 },
           show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 220, damping: 16 } },
         }}
-        className="bg-gradient-to-b from-ink-strong to-[#c9c2b8] bg-clip-text font-display text-[clamp(46px,10vw,84px)] leading-[0.95] font-bold tracking-tight text-transparent"
+        className="font-display text-[clamp(46px,10vw,84px)] leading-[0.95] font-bold tracking-tight text-ink-strong"
       >
         Face Analyzer
       </motion.h1>

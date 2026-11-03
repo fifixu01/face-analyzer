@@ -8,11 +8,11 @@ type ButtonProps = HTMLMotionProps<'button'> & { variant?: 'primary' | 'ghost' |
 export function Button({ variant = 'ghost', className = '', ...props }: ButtonProps) {
   const styles = {
     primary:
-      'bg-sage text-bg font-bold px-4 py-2.5 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_-10px_rgba(147,173,156,0.6)] hover:brightness-105',
+      'bg-sage text-bg font-bold px-4 py-2.5 rounded-2xl hover:brightness-105',
     ghost:
-      'border border-line bg-raised/60 text-ink font-semibold px-4 py-2.5 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-faint hover:bg-raised',
-    quiet: 'text-muted font-semibold px-3 py-2 rounded-xl hover:text-ink hover:bg-raised/60',
-    big: 'bg-sage text-bg font-display font-semibold text-lg px-8 py-3.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_10px_30px_-8px_rgba(147,173,156,0.45)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_14px_36px_-8px_rgba(147,173,156,0.55)]',
+      'bg-raised text-ink font-semibold px-4 py-2.5 rounded-2xl hover:bg-line',
+    quiet: 'text-muted font-semibold px-3 py-2 rounded-xl hover:text-ink hover:bg-raised',
+    big: 'bg-sage text-bg font-display font-semibold text-lg px-8 py-3.5 rounded-full hover:brightness-105',
   }[variant];
   return (
     <motion.button

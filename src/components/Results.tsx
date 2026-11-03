@@ -124,7 +124,7 @@ function Hero({
             transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.2 }}
             aria-hidden
           >
-            <path d={SHAPE_PATHS[shape.best]} fill="rgba(147,173,156,0.08)" stroke="var(--color-sage)" strokeWidth="2" />
+            <path d={SHAPE_PATHS[shape.best]} fill="none" stroke="var(--color-sage)" strokeWidth="2" />
           </motion.svg>
           <div className="min-w-0 flex-1">
             <motion.p
@@ -168,39 +168,44 @@ function Hero({
 
 function Chip({ color, children }: { color: string; children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-raised/60 px-2.5 py-1 text-[13px] font-semibold text-ink">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-raised px-2.5 py-1 text-[13px] font-semibold text-ink">
       <i className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
       {children}
     </span>
   );
 }
 
-function SymmetryRing({ value, size = 76 }: { value: number; size?: number }) {
+function SymmetryRing({ value }: { value: number }) {
   const n = useCountUp(value, { delay: 0.3 });
-  const r = 30;
+  const r = 31;
   const c = 2 * Math.PI * r;
   return (
-    <div className="relative grid flex-none place-items-center" style={{ width: size, height: size }}>
-      <svg viewBox="0 0 72 72" className="absolute inset-0 -rotate-90" aria-hidden>
-        <circle cx="36" cy="36" r={r} fill="none" stroke="var(--color-meter)" strokeWidth="5" />
-        <motion.circle
-          cx="36"
-          cy="36"
-          r={r}
-          fill="none"
-          stroke="var(--color-sage)"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeDasharray={c}
-          initial={{ strokeDashoffset: c }}
-          animate={{ strokeDashoffset: c * (1 - value / 100) }}
-          transition={{ delay: 0.3, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-        />
-      </svg>
-      <div className="flex flex-col items-center leading-none">
-        <span className="tabular font-display text-2xl font-semibold text-ink-strong">{Math.round(n)}</span>
-        <span className="mt-0.5 text-[10px] font-bold tracking-wide text-muted uppercase">sym</span>
+    <div className="flex flex-none flex-col items-center gap-1.5">
+      <div className="relative grid h-[104px] w-[104px] place-items-center min-[820px]:h-[116px] min-[820px]:w-[116px]">
+        <svg viewBox="0 0 72 72" className="absolute inset-0 -rotate-90" aria-hidden>
+          <circle cx="36" cy="36" r={r} fill="none" stroke="var(--color-meter)" strokeWidth="5" />
+          <motion.circle
+            cx="36"
+            cy="36"
+            r={r}
+            fill="none"
+            stroke="var(--color-sage)"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            initial={{ strokeDashoffset: c }}
+            animate={{ strokeDashoffset: c * (1 - value / 100) }}
+            transition={{ delay: 0.3, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+          />
+        </svg>
+        <p className="flex flex-col items-center leading-none">
+          <span className="tabular font-display text-[40px] font-semibold text-ink-strong min-[820px]:text-[44px]">
+            {Math.round(n)}
+          </span>
+          <span className="mt-0.5 text-[11px] font-semibold text-muted">/ 100</span>
+        </p>
       </div>
+      <p className="text-sm text-muted">symmetry</p>
     </div>
   );
 }
@@ -222,7 +227,7 @@ function ResultPhoto({ result }: { result: StillResult }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-[18px] border border-line bg-frame">
+      <div className="overflow-hidden rounded-[18px] bg-frame">
         <canvas ref={canvasRef} className="block h-auto w-full" />
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-1.5 pb-1">
@@ -258,7 +263,7 @@ function ShapeCard({ shape, m }: { shape: Shape; m: Metrics }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + i * 0.05, type: 'spring', stiffness: 300, damping: 24 }}
               className={`flex flex-col items-center gap-1.5 rounded-2xl border px-2 pt-3 pb-2.5 ${
-                best ? 'border-sage/50 bg-sage-soft' : 'border-line bg-raised/40'
+                best ? 'border-sage/40 bg-sage-soft' : 'border-transparent bg-raised'
               }`}
             >
               <svg viewBox="0 0 40 52" className="h-9 w-7" aria-hidden>
@@ -419,7 +424,7 @@ function Features({ m }: { m: Metrics }) {
               {on && (
                 <motion.span
                   layoutId="feature-tab"
-                  className="absolute inset-0 rounded-full border border-line bg-raised"
+                  className="absolute inset-0 rounded-full bg-raised"
                   transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                 />
               )}
@@ -461,7 +466,7 @@ function FeatureRows({ group, m, color }: { group: Group; m: Metrics; color: str
       {rows.map(({ label, format, measures, typical, spread, value, reading }) => (
         <Expandable
           key={label}
-          className="rounded-2xl border border-line bg-raised/35 px-4 transition-colors hover:bg-raised/60"
+          className="rounded-2xl bg-raised px-4 transition-colors hover:bg-[#2d2b29]"
           headerClassName="py-3"
           header={
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2">
@@ -493,7 +498,7 @@ function Scale({ value, typical, spread, color }: { value: number; typical: numb
         style={{ left: `${(0.5 - band) * 100}%`, right: `${(0.5 - band) * 100}%` }}
       />
       <motion.div
-        className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface"
+        className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-raised"
         style={{ background: color }}
         initial={{ left: '50%' }}
         animate={{ left: `${pos * 100}%` }}
@@ -507,7 +512,7 @@ function Scale({ value, typical, spread, color }: { value: number; typical: numb
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-raised/50 px-2.5 py-2">
+    <div className="rounded-xl bg-raised px-2.5 py-2">
       <dt className="text-[11px] font-semibold text-muted">{label}</dt>
       <dd className="tabular text-base text-ink-strong">{value}</dd>
     </div>
@@ -529,7 +534,7 @@ function Meter({ value, delay = 0 }: { value: number; delay?: number }) {
 
 function Explain({ verdict, children, note }: { verdict?: string; children: ReactNode; note?: string }) {
   return (
-    <div className="mt-1 mb-3 flex flex-col gap-1.5 rounded-xl bg-bg/50 px-3.5 py-3 text-sm leading-relaxed">
+    <div className="mt-1 mb-3 flex flex-col gap-1.5 rounded-xl bg-bg px-3.5 py-3 text-sm leading-relaxed">
       {verdict && <p className="font-bold text-ink-strong">{verdict}</p>}
       <p>{children}</p>
       {note && <p className="text-[13px] text-muted">{note}</p>}

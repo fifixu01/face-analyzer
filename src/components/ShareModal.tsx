@@ -72,7 +72,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 backdrop-blur-sm min-[720px]:items-center min-[720px]:p-4"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/65 min-[720px]:items-center min-[720px]:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -88,7 +88,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
             exit={{ opacity: 0, y: 60 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             // Phones: a bottom sheet. Wider screens: a centered dialog with the preview beside the controls.
-            className="grid max-h-[92svh] w-full max-w-[860px] grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto rounded-t-[28px] border border-line bg-surface p-4 shadow-[0_-20px_60px_-20px_rgba(0,0,0,0.6)] pb-[calc(1rem+env(safe-area-inset-bottom))] min-[720px]:grid-cols-[minmax(0,1fr)_260px] min-[720px]:gap-6 min-[720px]:rounded-[28px] min-[720px]:p-6"
+            className="grid max-h-[92svh] w-full max-w-[860px] grid-cols-[minmax(0,1fr)] gap-4 overflow-y-auto rounded-t-[28px] bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] min-[720px]:grid-cols-[minmax(0,1fr)_260px] min-[720px]:gap-6 min-[720px]:rounded-[28px] min-[720px]:p-6"
           >
             {/* Preview */}
             <div className="order-2 flex items-start justify-center rounded-2xl bg-frame p-3 min-[720px]:order-none min-[720px]:p-4">
@@ -98,7 +98,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                     key={preview.id}
                     src={preview.url}
                     alt={`Results card in the ${theme.name} style`}
-                    className="max-h-[44svh] w-auto max-w-full rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.35)] min-[720px]:max-h-[72vh]"
+                    className="max-h-[44svh] w-auto max-w-full rounded-xl min-[720px]:max-h-[72vh]"
                     initial={{ opacity: 0, scale: 0.94, rotate: -2 }}
                     animate={{ opacity: 1, scale: 1, rotate: 0 }}
                     exit={{ opacity: 0, scale: 0.96, rotate: 2 }}
@@ -119,7 +119,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                   <p className="font-display text-2xl font-semibold text-ink-strong">Share results</p>
                   <p className="text-[13px] text-muted">Pick a style. Your photo isn’t included.</p>
                 </div>
-                <button onClick={onClose} aria-label="Close" className="-m-1 grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-line bg-raised/60 text-muted hover:text-ink">
+                <button onClick={onClose} aria-label="Close" className="-m-1 grid h-9 w-9 cursor-pointer place-items-center rounded-full bg-raised text-muted hover:text-ink">
                   <Icon name="close" />
                 </button>
               </div>
@@ -133,7 +133,7 @@ export function ShareModal({ open, onClose, metrics }: { open: boolean; onClose:
                       onClick={() => setThemeId(t.id)}
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      className="relative flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-line bg-raised p-2 text-center min-[720px]:items-start min-[720px]:gap-2 min-[720px]:p-3 min-[720px]:text-left"
+                      className="relative flex cursor-pointer flex-col items-center gap-1.5 rounded-xl bg-raised p-2 text-center min-[720px]:items-start min-[720px]:gap-2 min-[720px]:p-3 min-[720px]:text-left"
                     >
                       {active && (
                         <motion.span

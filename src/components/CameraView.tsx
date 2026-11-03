@@ -217,7 +217,7 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
     <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 min-[820px]:grid-cols-[minmax(0,1fr)_290px] min-[820px]:gap-5">
       {/* Phones: a tall, fixed-height preview (video is cropped to fill it). Desktop: the video's natural size. */}
       <div
-        className={`relative h-[min(62svh,calc((100vw-2.5rem)*4/3))] overflow-hidden rounded-[28px] border border-line bg-frame shadow-[0_24px_50px_-28px_rgba(0,0,0,0.7)] min-[820px]:h-auto ${
+        className={`relative h-[min(62svh,calc((100vw-2.5rem)*4/3))] overflow-hidden rounded-[28px] border border-line bg-frame min-[820px]:h-auto ${
           live ? '' : 'min-[820px]:aspect-[16/10]'
         }`}
       >
@@ -237,7 +237,7 @@ export function CameraView({ onCapture, notice }: { onCapture: (still: HTMLCanva
             {cam.state === 'starting' ? (
               <>
                 <motion.div
-                  className="grid h-14 w-14 place-items-center rounded-2xl border border-line bg-surface text-muted"
+                  className="grid h-14 w-14 place-items-center rounded-2xl bg-surface text-muted"
                   animate={{ scale: [1, 1.06, 1] }}
                   transition={{ duration: 1.6, repeat: Infinity }}
                 >
@@ -301,8 +301,8 @@ function FaceGuide({ good, text, holdBarRef }: { good: boolean; text: string; ho
         }}
         transition={{ type: 'spring', stiffness: 200, damping: 18 }}
       />
-      <div className="absolute bottom-[5%] flex max-w-[90%] items-center gap-2.5 rounded-full border border-white/10 bg-[rgba(24,23,22,0.62)] py-2 pr-4 pl-2 text-center text-sm text-[#f3f1ed] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] backdrop-blur-md">
-        <span className={`grid h-6 w-6 flex-none place-items-center rounded-full transition-colors ${good ? 'bg-sage text-bg' : 'bg-white/12 text-white/70'}`}>
+      <div className="absolute bottom-[5%] flex max-w-[90%] items-center gap-2.5 rounded-full bg-[#1d1c1b] py-2 pr-4 pl-2 text-center text-sm text-[#f3f1ed]">
+        <span className={`grid h-6 w-6 flex-none place-items-center rounded-full transition-colors ${good ? 'bg-sage text-bg' : 'bg-[#34322f] text-white/70'}`}>
           {good ? <Icon name="check" className="h-3.5 w-3.5" /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
         </span>
         <div className="flex min-w-0 flex-col items-start gap-1">
@@ -318,7 +318,7 @@ function FaceGuide({ good, text, holdBarRef }: { good: boolean; text: string; ho
               {text}
             </motion.span>
           </AnimatePresence>
-          <div className="h-[3px] w-full min-w-24 overflow-hidden rounded-full bg-white/15">
+          <div className="h-[3px] w-full min-w-24 overflow-hidden rounded-full bg-[#34322f]">
             <div ref={holdBarRef} className="h-full w-0 rounded-full bg-[rgba(190,214,198,0.95)]" />
           </div>
         </div>
