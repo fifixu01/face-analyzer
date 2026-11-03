@@ -43,7 +43,7 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 /** Pixel-space landmarks rotated so the eyes are level (removes head tilt). */
 function levelPoints(landmarks, width, height) {
-  const px = landmarks.map((p) => ({ x: p.x * width, y: p.y * height, z: (p.z ?? 0) * width }));
+  const px = landmarks.map((p) => ({ x: p.x * width, y: p.y * height }));
   const a = px[IDX.eyeOuterL];
   const b = px[IDX.eyeOuterR];
   const angle = Math.atan2(b.y - a.y, b.x - a.x);
@@ -51,10 +51,9 @@ function levelPoints(landmarks, width, height) {
   const cy = (a.y + b.y) / 2;
   const cos = Math.cos(-angle);
   const sin = Math.sin(-angle);
-  const level = px.map(({ x, y, z }) => ({
+  const level = px.map(({ x, y }) => ({
     x: cx + (x - cx) * cos - (y - cy) * sin,
     y: cy + (x - cx) * sin + (y - cy) * cos,
-    z,
   }));
   return { level, rollDeg: (angle * 180) / Math.PI };
 }

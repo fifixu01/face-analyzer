@@ -1,7 +1,7 @@
 // Detailed eye, brow, nose and lip measurements from the full landmark contours.
 //
-// Input: landmarks already rotated so the eyes are level, in pixels, with y pointing down and
-// z in the same units as x (smaller z = closer to the camera). All outputs are scale-free.
+// Input: landmarks already rotated so the eyes are level, in pixels, with y pointing down.
+// Everything is measured from the front view only. All outputs are scale-free.
 //
 // Contour indices come from MediaPipe's FACE_LANDMARKS_* connection sets. "R" is the subject's
 // right side (the left of an unmirrored photo).
@@ -16,11 +16,10 @@ const BROWS = [
   { upper: [300, 293, 334, 296, 336], lower: [276, 283, 282, 295, 285] },
 ];
 const NOSE = {
-  nasion: 168, tip: 1, tipTop: 4, subnasale: 2,
+  nasion: 168, subnasale: 2,
   alaR: 129, alaL: 358, // outer edges of the nostril wings (widest point of the lower nose)
   tipR: 45, tipL: 275, // sides of the tip
   bridgeR: 122, bridgeL: 351, // sides of the upper bridge
-  dorsum: [6, 197, 195, 5], // bridge points between nasion and tip, for the profile line
 };
 const LIPS = { cornerR: 61, cornerL: 291, top: 0, peakR: 37, peakL: 267, upperInner: 13, lowerInner: 14, bottom: 17 };
 
@@ -119,18 +118,6 @@ export function featureMetrics(P) {
   const alarWidth = dist(n('alaR'), n('alaL'));
   const noseLength = n('subnasale').y - n('nasion').y;
   const meshLength = P[152].y - P[10].y;
-  // Profile: how far the bridge points sit in front of (positive, a bump) or behind (a scoop) the
-  // straight line from nasion to the tip, in depth. Uses MediaPipe's estimated depth.
-  const a = n('nasion');
-  const b = n('tipTop');
-  const dorsum = mean(
-    NOSE.dorsum.map((i) => {
-      const p = P[i];
-      const t = (p.y - a.y) / (b.y - a.y || 1e-6);
-      return a.z + t * (b.z - a.z) - p.z;
-    }),
-  );
-  const alarZ = (n('alaR').z + n('alaL').z) / 2;
 
   // Lips
   const l = (k) => P[LIPS[k]];
@@ -158,9 +145,6 @@ export function featureMetrics(P) {
     noseBridge: dist(n('bridgeR'), n('bridgeL')) / alarWidth,
     noseTipWidth: dist(n('tipR'), n('tipL')) / alarWidth,
     noseLength: noseLength / meshLength,
-    noseTipLift: (n('subnasale').y - n('tip').y) / noseLength,
-    noseProjection: (alarZ - n('tip').z) / alarWidth,
-    noseDorsum: dorsum / noseLength,
 
     bowDepth: (l('top').y - peaksY) / upperLip,
     bowWidth: dist(l('peakR'), l('peakL')) / mouthWidth,

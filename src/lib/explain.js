@@ -185,7 +185,7 @@ const NOSE = {
   title: 'Nose',
   headline(m) {
     const width = pick(bandOf(this, 'noseToEyeGap', m), { low: 'Narrow', mid: 'Medium', high: 'Wide' });
-    const tip = pick(bandOf(this, 'noseTipLift', m), { low: ', downturned tip', mid: '', high: ', upturned tip' });
+    const tip = pick(bandOf(this, 'noseTipWidth', m), { low: ', refined tip', mid: '', high: ', rounded tip' });
     return `${width} nose${tip}`;
   },
   items: [
@@ -218,26 +218,6 @@ const NOSE = {
         high: ['Wide bridge', `The top of your bridge is ${pct(v)} as wide as your nostrils, so the nose stays fairly even in width from top to bottom.`],
       }),
     }),
-    item('Bridge profile', 'noseDorsum', {
-      format: pct,
-      measures: 'How far the bridge sits in front of (bump) or behind (scoop) a straight line from the top of the nose to the tip, as a share of nose length. Estimated from MediaPipe’s depth, which is less reliable than the front view.',
-      typical: 0.023, spread: 0.015,
-      text: (v) => ({
-        low: ['Scooped', `Your bridge dips slightly inward between the top and the tip, a gently scooped or “ski slope” profile.`],
-        mid: ['Straight', `Your bridge runs in a fairly straight line from top to tip.`],
-        high: ['Slight bump', `Your bridge rises slightly outward partway down, a gentle bump or Roman profile.`],
-      }),
-    }),
-    item('Tip direction', 'noseTipLift', {
-      format: pct,
-      measures: 'How far the tip sits above the base of the nose, as a share of nose length. Higher means the tip points up.',
-      typical: 0.18, spread: 0.04,
-      text: (v) => ({
-        low: ['Downturned', `Your nose tip sits low, close to the base of the nose (${pct(v)} of nose length above it). A tip that points down reads as strong and classic.`],
-        mid: ['Straight', `Your nose tip points straight ahead (${pct(v)} of nose length above the base), the most common angle.`],
-        high: ['Upturned', `Your nose tip sits higher above the base (${pct(v)} of nose length), so it turns up slightly and shows a little more nostril. An upturned tip reads as cute and youthful. Tilting your head back during capture also raises this.`],
-      }),
-    }),
     item('Tip width', 'noseTipWidth', {
       format: pct,
       measures: 'Width of the tip as a share of nostril width.',
@@ -246,16 +226,6 @@ const NOSE = {
         low: ['Refined tip', `Your nose tip is narrow, ${pct(v)} of your nostril width, giving it a defined, pointed look.`],
         mid: ['Medium tip', `Your nose tip is a typical width, ${pct(v)} of your nostril width.`],
         high: ['Rounded tip', `Your nose tip is broad, ${pct(v)} of your nostril width, for a soft, rounded (bulbous) tip.`],
-      }),
-    }),
-    item('Tip projection', 'noseProjection', {
-      format: pct,
-      measures: 'How far the tip sticks out in front of the nostril wings, as a share of nose width. Estimated from MediaPipe’s depth, which is less reliable than the front view.',
-      typical: 0.735, spread: 0.08,
-      text: (v) => ({
-        low: ['Low projection', `Your nose tip sits fairly close to the face, so the nose looks flatter from the side.`],
-        mid: ['Typical projection', `Your nose tip sticks out a typical amount from the face.`],
-        high: ['High projection', `Your nose tip sticks out clearly from the face, giving a strong side profile.`],
       }),
     }),
     item('Straightness', 'noseCurve', {
@@ -455,12 +425,9 @@ const SHORT = {
   browHeight: ['Low-set', 'Balanced height', 'High-set'],
 
   noseToEyeGap: ['Narrow', 'Medium width', 'Wide'],
-  noseLength: ['Short', null, 'Long'],
-  noseBridge: ['Slim bridge', null, 'Wide bridge'],
-  noseDorsum: ['Scooped bridge', 'Straight bridge', 'Slight bump'],
-  noseTipLift: ['Downturned tip', 'Straight tip', 'Upturned tip'],
-  noseTipWidth: ['Refined tip', null, 'Rounded tip'],
-  noseProjection: ['Low projection', null, 'High projection'],
+  noseLength: ['Short', 'Average length', 'Long'],
+  noseBridge: ['Slim bridge', 'Medium bridge', 'Wide bridge'],
+  noseTipWidth: ['Refined tip', 'Medium tip', 'Rounded tip'],
   noseCurve: [null, null, 'Curved bridge'],
 
   lipFullness: ['Thin lips', 'Medium lips', 'Full lips'],

@@ -44,7 +44,7 @@ export function makeDemoResult(): StillResult {
       eyeAspect: 0.25, eyeUpperArc: 0.13, eyeLowerArc: 0.11, eyeLidPeak: 0.48, canthalTilt: 5.6,
       irisSize: 0.5, irisWhiteBelow: -0.04, irisWhiteAbove: -0.2,
       browArch: 0.15, browPeak: 0.66, browTilt: -4.2, browThickness: 0.24,
-      noseBridge: 0.3, noseTipWidth: 0.26, noseLength: 0.295, noseTipLift: 0.22, noseProjection: 0.74, noseDorsum: 0.02, noseCurve: 0.012,
+      noseBridge: 0.3, noseTipWidth: 0.26, noseLength: 0.295, noseCurve: 0.012,
       bowDepth: 0.19, bowWidth: 0.28, mouthCornerTilt: -0.4,
       lipFullness: 0.43, philtrum: 0.17, chinLength: 0.54, yaw: 0, roll: 0,
     },
