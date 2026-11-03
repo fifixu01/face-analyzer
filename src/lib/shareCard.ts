@@ -1,7 +1,7 @@
 // Draws a shareable summary card (no photo) onto a canvas, in one of several themes.
 import { faceShape } from './analyze.js';
 import { animalType } from './fun.js';
-import { FEATURE_GROUPS, readThirds } from './explain.js';
+import { FEATURE_GROUPS, cardPhrases, readThirds } from './explain.js';
 
 type Metrics = Record<string, number>;
 
@@ -215,7 +215,7 @@ export function cardData(m: Metrics) {
     thirdsVerdict: thirdsVerdict as string,
     groups: FEATURE_GROUPS.map((g) => ({
       title: g.title,
-      labels: [g.headline(m) as string],
+      labels: cardPhrases(g, m) as string[],
     })),
     date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
   };

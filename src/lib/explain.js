@@ -435,3 +435,67 @@ export function readThirds(m) {
   const [name, v, meaning] = thirds.sort((a, b) => b[1] - a[1])[0];
   return [`Longer ${name} third`, `Your ${name} third is ${pct(v)} of your face length, the largest of the three (equal would be 33%). ${meaning}`];
 }
+
+// Short, card-friendly phrases per measurement: [below typical, typical, above typical].
+// null means "not worth mentioning" (typical values, mostly).
+const SHORT = {
+  eyeAspect: ['Almond', 'Soft almond', 'Round'],
+  canthalTilt: ['Downturned', 'Level corners', 'Upturned'],
+  eyeLidPeak: ['Rounded upper lid', 'Centered lid arch', 'Lifted outer lid'],
+  eyeLowerArc: ['Straight lower lid', null, 'Curved lower lid'],
+  irisSize: ['Smaller iris', null, 'Large iris'],
+  irisWhiteBelow: ['Lid hugs the iris', null, 'White below iris'],
+  eyeSize: ['Smaller eyes', null, 'Big eyes'],
+  eyeSpacing: ['Close-set', 'Evenly spaced', 'Wide-set'],
+
+  browArch: ['Straight', 'Soft arch', 'High arch'],
+  browPeak: ['Rounded arch', 'Classic peak', 'Angled arch'],
+  browTilt: ['Dropping tails', null, 'Lifted tails'],
+  browThickness: ['Thin', 'Medium thickness', 'Thick'],
+  browHeight: ['Low-set', 'Balanced height', 'High-set'],
+
+  noseToEyeGap: ['Narrow', 'Medium width', 'Wide'],
+  noseLength: ['Short', null, 'Long'],
+  noseBridge: ['Slim bridge', null, 'Wide bridge'],
+  noseDorsum: ['Scooped bridge', 'Straight bridge', 'Slight bump'],
+  noseTipLift: ['Downturned tip', 'Straight tip', 'Upturned tip'],
+  noseTipWidth: ['Refined tip', null, 'Rounded tip'],
+  noseProjection: ['Low projection', null, 'High projection'],
+  noseCurve: [null, null, 'Curved bridge'],
+
+  lipFullness: ['Thin lips', 'Medium lips', 'Full lips'],
+  lipRatio: ['Fuller upper lip', null, 'Fuller lower lip'],
+  bowDepth: ['Soft cupid’s bow', 'Defined cupid’s bow', 'Sharp cupid’s bow'],
+  bowWidth: ['Narrow bow', null, 'Wide bow'],
+  mouthCornerTilt: ['Downturned corners', 'Neutral corners', 'Upturned corners'],
+  mouthToNose: ['Small mouth', null, 'Wide mouth'],
+  philtrum: ['Short philtrum', null, 'Long philtrum'],
+
+  outlineJaw: ['Tapered jaw', 'Moderate jaw', 'Strong jaw'],
+  outlineForehead: ['Narrow forehead', 'Balanced forehead', 'Broad forehead'],
+  outlineChin: ['Pointed chin', 'Medium chin', 'Broad chin'],
+  chinLength: ['Short chin', null, 'Long chin'],
+};
+
+// The trait each feature always leads with on the card.
+const LEAD = { Eyes: 'eyeAspect', Brows: 'browArch', Nose: 'noseToEyeGap', 'Lips & mouth': 'lipFullness', 'Face outline': 'outlineJaw' };
+const BAND_INDEX = { low: 0, mid: 1, high: 2 };
+
+/**
+ * A few short phrases for a feature: its lead trait, then whatever stands out most
+ * (furthest from typical), then everyday traits to fill in, up to `max` in total.
+ */
+export function cardPhrases(group, m, max = 3) {
+  const scored = group.items
+    .filter((it) => Number.isFinite(m[it.key]) && SHORT[it.key])
+    .map((it) => {
+      const band = it.read(m[it.key])[2];
+      return { key: it.key, band, phrase: SHORT[it.key][BAND_INDEX[band]], distance: Math.abs(m[it.key] - it.typical) / it.spread };
+    });
+  const lead = scored.find((s) => s.key === LEAD[group.title]);
+  const others = scored.filter((s) => s !== lead && s.phrase);
+  // Standout traits first (furthest from typical), then everyday ones to fill in, in list order.
+  const standout = others.filter((s) => s.band !== 'mid').sort((a, b) => b.distance - a.distance);
+  const everyday = others.filter((s) => s.band === 'mid');
+  return [lead?.phrase, ...standout.map((s) => s.phrase), ...everyday.map((s) => s.phrase)].filter(Boolean).slice(0, max);
+}
