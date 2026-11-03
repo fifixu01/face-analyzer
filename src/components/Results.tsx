@@ -7,6 +7,7 @@ import { SHAPE_NOTES, summaryText } from '../lib/report-text.js';
 import type { analyzeStill } from '../lib/analyzeStill.js';
 import { useCountUp } from '../hooks/useCountUp';
 import { AnimalCard } from './AnimalCard';
+import { ShareModal } from './ShareModal';
 import { Button, Expandable, Eyebrow, Toggle, rise, stagger } from './ui';
 
 export type StillResult = NonNullable<Awaited<ReturnType<typeof analyzeStill>>>;
@@ -17,6 +18,7 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 export function Results({ result, onRetake }: { result: StillResult; onRetake: () => void }) {
   const { metrics: m, issues, expressions } = result;
   const shape = faceShape(m);
+  const [sharing, setSharing] = useState(false);
 
   return (
     <motion.div
@@ -28,7 +30,7 @@ export function Results({ result, onRetake }: { result: StillResult; onRetake: (
       {/* Left: photo + summary */}
       <div className="flex flex-col gap-4">
         <motion.div variants={rise}>
-          <ResultPhoto result={result} onRetake={onRetake} />
+          <ResultPhoto result={result} onRetake={onRetake} onShare={() => setSharing(true)} />
         </motion.div>
 
         <motion.div variants={rise} className="flex flex-col gap-4 border-t border-line pt-5">
@@ -112,11 +114,13 @@ export function Results({ result, onRetake }: { result: StillResult; onRetake: (
           estimates from a single photo.
         </motion.p>
       </div>
+
+      <ShareModal open={sharing} onClose={() => setSharing(false)} metrics={m} />
     </motion.div>
   );
 }
 
-function ResultPhoto({ result, onRetake }: { result: StillResult; onRetake: () => void }) {
+function ResultPhoto({ result, onRetake, onShare }: { result: StillResult; onRetake: () => void; onShare: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showMesh, setShowMesh] = useState(false);
 
@@ -144,7 +148,10 @@ function ResultPhoto({ result, onRetake }: { result: StillResult; onRetake: () =
           </span>
         ))}
       </div>
-      <div className="mt-3.5 flex items-center gap-4">
+      <div className="mt-3.5 flex flex-wrap items-center gap-3">
+        <Button variant="primary" onClick={onShare}>
+          Share results
+        </Button>
         <Button onClick={onRetake}>Try again</Button>
         <Toggle checked={showMesh} onChange={setShowMesh} label="Show mesh" />
       </div>
