@@ -118,7 +118,7 @@ function Hero({
         <div className="flex items-center gap-4">
           <motion.svg
             viewBox="0 0 40 52"
-            className="h-16 w-12 flex-none"
+            className="hidden h-16 w-12 flex-none min-[480px]:block"
             initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.2 }}
@@ -131,7 +131,7 @@ function Hero({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.25 }}
-              className="font-display text-5xl leading-none font-semibold tracking-tight text-ink-strong"
+              className="font-display text-[clamp(32px,10vw,48px)] leading-none font-semibold tracking-tight text-ink-strong"
             >
               {shape.best}
             </motion.p>
@@ -181,7 +181,7 @@ function SymmetryRing({ value }: { value: number }) {
   const c = 2 * Math.PI * r;
   return (
     <div className="flex flex-none flex-col items-center gap-1.5">
-      <div className="relative grid h-[104px] w-[104px] place-items-center min-[820px]:h-[116px] min-[820px]:w-[116px]">
+      <div className="relative grid h-[92px] w-[92px] place-items-center min-[380px]:h-[104px] min-[380px]:w-[104px] min-[820px]:h-[116px] min-[820px]:w-[116px]">
         <svg viewBox="0 0 72 72" className="absolute inset-0 -rotate-90" aria-hidden>
           <circle cx="36" cy="36" r={r} fill="none" stroke="var(--color-meter)" strokeWidth="5" />
           <motion.circle
@@ -199,7 +199,7 @@ function SymmetryRing({ value }: { value: number }) {
           />
         </svg>
         <p className="flex flex-col items-center leading-none">
-          <span className="tabular font-display text-[40px] font-semibold text-ink-strong min-[820px]:text-[44px]">
+          <span className="tabular font-display text-[34px] font-semibold text-ink-strong min-[380px]:text-[40px] min-[820px]:text-[44px]">
             {Math.round(n)}
           </span>
           <span className="mt-0.5 text-[11px] font-semibold text-muted">/ 100</span>
